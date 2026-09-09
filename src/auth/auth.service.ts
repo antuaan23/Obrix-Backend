@@ -10,7 +10,7 @@ import { Trabajador } from 'src/trabajador/entities/trabajador.entity';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(Usuario)
+    @InjectRepository(Trabajador)
     private readonly trabajadorRepository: Repository<Trabajador>,
     private readonly jwtService: JwtService,
   ) {}
@@ -20,7 +20,7 @@ export class AuthService {
     const { email, password } = createUsuarioDto;
 
     // 1. Verificar si el correo ya existe
-    const existeUsuario = await this.usuarioRepository.findOne({ where: { email } });
+    const existeUsuario = await this.trabajadorRepository.findOne({ where: { email } });
     if (existeUsuario) {
       throw new BadRequestException('El usuario ya está registrado');
     }
@@ -29,12 +29,12 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 3. Crear y guardar nuevo usuario
-    const nuevoUsuario = this.usuarioRepository.create({
+    const nuevoUsuario = this.trabajadorRepository.create({
       email,
       password: hashedPassword,
       activo: true
     });
-    await this.usuarioRepository.save(nuevoUsuario);
+    await this.trabajadorRepository.save(nuevoUsuario);
 
     // 4. Excluir el password de la respuesta devuelta por seguridad
     const { password: _, ...result } = nuevoUsuario;
@@ -46,7 +46,7 @@ export class AuthService {
     const { email, password } = loginDto;
 
     // 1. Buscar usuario
-    const usuario = await this.usuarioRepository.findOne({ where: { email } });
+    const usuario = await this.trabajadorRepository.findOne({ where: { email } });
     if (!usuario) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
