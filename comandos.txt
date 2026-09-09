@@ -1,0 +1,11 @@
+docker exec -it postgresService psql -U postgres -d orbix_db
+
+Listar todas las bases de datos	\l
+
+Conectarse / Cambiar a otra base de datos	\c nombre_base_datos
+
+Listar todas las tablas de la BD actual	\dt
+
+Ver la estructura / columnas de una tabla	\d nombre_tabla
+
+Salir de la consola psql	\q
