@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { CreateUsuarioDto } from '../usuario/dto/create-usuario.dto';
+import { CreateTrabajadorDto } from '../trabajador/dto/create-trabajador.dto';
 import { LoginDto } from './dto/login.dto';
 import { Trabajador } from 'src/trabajador/entities/trabajador.entity';
 
@@ -16,8 +16,8 @@ export class AuthService {
   ) {}
 
   // REGISTRO
-  async registro(createUsuarioDto: CreateUsuarioDto) {
-    const { email, password } = createUsuarioDto;
+  async registro(createTrabajadorDto: CreateTrabajadorDto) {
+    const { email, password } = createTrabajadorDto;
 
     // 1. Verificar si el correo ya existe
     const existeUsuario = await this.trabajadorRepository.findOne({ where: { email } });

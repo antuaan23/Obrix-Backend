@@ -23,8 +23,8 @@ async function bootstrap() {
 
   // 4. Configuración de Swagger
   const config = new DocumentBuilder()
-    .setTitle('API BioGastos / Rendiciones')
-    .setDescription('Documentación de la API del sistema Orbix')
+    .setTitle('API Obrix / Sistema Gestión de Obras y Proyectos')
+    .setDescription('Documentación de la API del sistema Obrix')
     .setVersion('1.0')
     .addBearerAuth() // Añade soporte para tokens JWT en Swagger
     .build();

@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsuarioModule } from './usuario/usuario.module';
+import { TrabajadorModule } from './trabajador/trabajador.module';
 import { AuthModule } from './auth/auth.module';
 import { ProyectoModule } from './proyecto/proyecto.module';
 import { ClienteModule } from './cliente/cliente.module';
-import { TrabajadorModule } from './trabajador/trabajador.module';
 
 @Module({
   imports: [
@@ -30,11 +29,10 @@ import { TrabajadorModule } from './trabajador/trabajador.module';
       }),
     }),
 
-    UsuarioModule,
+    TrabajadorModule,  
     AuthModule,
     ProyectoModule,
     ClienteModule,
-    TrabajadorModule,
   ],
 })
 export class AppModule {}

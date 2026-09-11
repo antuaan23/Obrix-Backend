@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated} from 'typeorm';
+import { Cliente } from 'src/cliente/entities/cliente.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany} from 'typeorm';
 
 @Entity('trabajadores')
 
@@ -22,5 +23,6 @@ export class Trabajador {
     @Column()
     activo!: boolean;
 
-
+    @OneToMany(() => Cliente, (cliente) => cliente.trabajador)
+    clientes!: Cliente[]
 }
