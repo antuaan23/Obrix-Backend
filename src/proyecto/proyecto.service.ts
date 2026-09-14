@@ -65,8 +65,21 @@ export class ProyectoService {
     return Result.ok(respuestaDto, 'Proyecto creado exitosamente.');
   }
 
-  findAll() {
-    return `This action returns all proyecto`;
+  async findAll(): Promise<Result<ProyectoResponseDto[]>> {
+    const proyectos = await this.proyectoRepository.find({
+      relations: {
+        cliente: true,
+        trabajadores: true,
+      },
+      order: {
+        creadoEl: 'DESC', // Ordena los proyectos del más reciente al más antiguo
+      },
+    });
+  
+    // Mapeamos el array de entidades al DTO de respuesta seguro
+    const respuesta = proyectos.map((p) => ProyectoResponseDto.fromEntity(p));
+  
+    return Result.ok(respuesta, 'Lista de proyectos obtenida correctamente.');
   }
 
   findOne(id: number) {
