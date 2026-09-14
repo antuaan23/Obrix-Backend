@@ -3,7 +3,6 @@ import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Proyecto } from './entities/proyecto.entity';
-import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Repository } from 'typeorm';
 import { Result } from 'src/result';
 import { Trabajador } from 'src/trabajador/entities/trabajador.entity';
@@ -16,52 +15,47 @@ export class ProyectoService {
     @InjectRepository(Proyecto)
     private readonly proyectoRepository: Repository<Proyecto>,
 
-    @InjectRepository(Cliente)
-    private readonly clienteRepository: Repository<Cliente>,
-
     @InjectRepository(Trabajador)
     private readonly trabajadorRepository: Repository<Trabajador>
-  ){}
+  ) {}
 
   async create(dto: CreateProyectoDto): Promise<Result<ProyectoResponseDto>> {
-    let cliente: Cliente | null = null;
-    let trabajador: Trabajador | null = null;
-  
-    // 1. Validar y obtener el trabajador si se envía en el DTO
-    if (dto.uuidTrabajador) {
-      trabajador = await this.trabajadorRepository.findOne({
-        where: { uuid: dto.uuidTrabajador },
-      });
-  
-      if (!trabajador) {
-        return Result.fallo<Proyecto>('El trabajador especificado no existe.');
-      }
-    }
-  
-    // 2. Validar y obtener el cliente si se envía en el DTO
-    if (dto.clienteId) {
-      cliente = await this.clienteRepository.findOne({
-        where: { uuid: dto.clienteId },
-      });
-  
-      if (!cliente) {
-        return Result.fallo<Proyecto>('El cliente especificado no existe.');
-      }
-    }
-  
-    // 3. Crear y guardar la entidad mapeando las relaciones
-    const nuevoProyecto = this.proyectoRepository.create({
-      nombre: dto.nombre,
-      cliente: cliente ?? undefined,
-      
-      trabajadores: trabajador ? [trabajador] : [],
-      
-      // Si la relación es @ManyToMany (múltiples trabajadores en un proyecto):
-      // trabajadores: trabajador ? [trabajador] : [],
+    // 1. Validar y obtener el trabajador
+    const trabajador = await this.trabajadorRepository.findOne({
+      where: { uuid: dto.uuidTrabajador },
     });
   
-    const guardar = await this.proyectoRepository.save(nuevoProyecto);
-    const respuestaDto = ProyectoResponseDto.fromEntity(guardar);
+    if (!trabajador) {
+      return Result.fallo<ProyectoResponseDto>('El trabajador especificado no existe.');
+    }
+  
+    // 2. Crear la entidad
+    const nuevoProyecto = this.proyectoRepository.create({
+      nombre: dto.nombre,
+      servicio: dto.servicio,
+      presupuesto: dto.presupuesto,
+      trabajadores: [trabajador],
+      cliente: dto.cliente, // Cascade insert
+    });
+  
+    // 3. Guardar el proyecto en la base de datos
+    const proyectoGuardado = await this.proyectoRepository.save(nuevoProyecto);
+  
+    // 4. Cargar la entidad completa con todas sus relaciones para el DTO
+    const proyectoCompleto = await this.proyectoRepository.findOne({
+      where: { uuid: proyectoGuardado.uuid },
+      relations: {
+        cliente: true,
+        trabajadores: true,
+      },
+    });
+  
+    if (!proyectoCompleto) {
+      return Result.fallo<ProyectoResponseDto>('Error al recuperar el proyecto creado.');
+    }
+  
+    const respuestaDto = ProyectoResponseDto.fromEntity(proyectoCompleto);
+    
     return Result.ok(respuestaDto, 'Proyecto creado exitosamente.');
   }
 
@@ -72,47 +66,59 @@ export class ProyectoService {
         trabajadores: true,
       },
       order: {
-        creadoEl: 'DESC', // Ordena los proyectos del más reciente al más antiguo
+        creadoEl: 'DESC',
       },
     });
-  
-    // Mapeamos el array de entidades al DTO de respuesta seguro
+
     const respuesta = proyectos.map((p) => ProyectoResponseDto.fromEntity(p));
-  
     return Result.ok(respuesta, 'Lista de proyectos obtenida correctamente.');
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} proyecto`;
+  async findOne(uuid: string): Promise<Result<ProyectoResponseDto>> {
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { uuid },
+      relations: {
+        cliente: true,
+        trabajadores: true,
+      },
+    });
+
+    if (!proyecto) {
+      return Result.fallo<ProyectoResponseDto>('Proyecto no encontrado.');
+    }
+
+    return Result.ok(ProyectoResponseDto.fromEntity(proyecto), 'Proyecto encontrado.');
   }
 
-  async update(uuid: string, dto: UpdateProyectoDto): Promise<Result<Proyecto>> {
+  async update(uuid: string, dto: UpdateProyectoDto): Promise<Result<ProyectoResponseDto>> {
     const proyecto = await this.proyectoRepository.findOne({ 
       where: { uuid },
       relations: {
-        cliente: true
+        cliente: true,
+        trabajadores: true,
       }
     });
 
     if (!proyecto) {
-      return Result.fallo<Proyecto>('Proyecto no encontrado.');
+      return Result.fallo<ProyectoResponseDto>('Proyecto no encontrado.');
     }
 
     if (dto.nombre) proyecto.nombre = dto.nombre;
-
-    if (dto.clienteId !== undefined) {
-      const cliente = await this.clienteRepository.findOne({ where: { uuid: dto.clienteId } });
-      if (!cliente) {
-        return Result.fallo<Proyecto>('El cliente a asociar no existe.');
-      }
-      proyecto.cliente = cliente;
-    }
+    if (dto.servicio) proyecto.servicio = dto.servicio;
+    if (dto.presupuesto !== undefined) proyecto.presupuesto = dto.presupuesto;
 
     const actualizado = await this.proyectoRepository.save(proyecto);
-    return Result.ok(actualizado, 'Proyecto actualizado exitosamente.');
+    return Result.ok(ProyectoResponseDto.fromEntity(actualizado), 'Proyecto actualizado exitosamente.');
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} proyecto`;
+  async remove(uuid: string): Promise<Result<boolean>> {
+    const proyecto = await this.proyectoRepository.findOne({ where: { uuid } });
+
+    if (!proyecto) {
+      return Result.fallo<boolean>('Proyecto no encontrado.');
+    }
+
+    await this.proyectoRepository.remove(proyecto);
+    return Result.ok(true, 'Proyecto eliminado exitosamente.');
   }
 }

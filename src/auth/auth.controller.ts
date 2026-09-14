@@ -1,19 +1,74 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { 
+  Controller, 
+  Post, 
+  Body, 
+  HttpCode, 
+  HttpStatus, 
+  UnauthorizedException, 
+  BadRequestException 
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { CreateTrabajadorDto } from '../trabajador/dto/create-trabajador.dto';
 import { LoginDto } from './dto/login.dto';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  register(@Body() createTrabajadorDto: CreateTrabajadorDto) {
-    return this.authService.registro(createTrabajadorDto);
+  @ApiOperation({ summary: 'Registrar un nuevo trabajador' })
+  @ApiResponse({
+    status: 201,
+    description: 'Trabajador registrado exitosamente.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'El correo electrónico ya se encuentra registrado.',
+  })
+  async register(@Body() createTrabajadorDto: CreateTrabajadorDto) {
+    const res = await this.authService.registro(createTrabajadorDto);
+
+    if (!res.exitoso) {
+      throw new BadRequestException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 
   @Post('login')
-  login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Iniciar sesión y obtener token JWT' })
+  @ApiResponse({
+    status: 200,
+    description: 'Inicio de sesión exitoso. Retorna el token de acceso.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Credenciales inválidas o cuenta de usuario inactiva.',
+  })
+  async login(@Body() loginDto: LoginDto) {
+    const res = await this.authService.login(loginDto);
+
+    if (!res.exitoso) {
+      throw new UnauthorizedException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 }

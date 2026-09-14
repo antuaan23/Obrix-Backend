@@ -31,8 +31,8 @@ export class Cliente {
     @CreateDateColumn()
     creadoEl!: Date
 
-    @Column()
-    activo!: boolean;
+    @Column({ type: 'boolean', default: true })
+    activo: boolean = true;
 
     @ManyToOne(() => Trabajador, (trabajador) => trabajador.clientes, {
         onDelete: 'SET NULL'
