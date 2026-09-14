@@ -1,34 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, InternalServerErrorException, NotFoundException, Get } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 
-@Controller('proyecto')
+@ApiTags('Proyectos')
+@Controller('proyectos')
 export class ProyectoController {
-  constructor(private readonly proyectoService: ProyectoService) {}
+  constructor(private readonly proyectosService: ProyectoService) {}
 
   @Post()
-  create(@Body() createProyectoDto: CreateProyectoDto) {
-    return this.proyectoService.create(createProyectoDto);
+  @ApiOperation({ summary: 'Crear un nuevo proyecto (solo con nombre o con datos opcionales)' })
+  async crear(@Body() dto: CreateProyectoDto) {
+    const res = await this.proyectosService.create(dto);
+    if (!res.exitoso) {
+      throw new InternalServerErrorException({ exitoso: false, descripcion: res.descripcion });
+    }
+    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
   }
 
-  @Get()
-  findAll() {
-    return this.proyectoService.findAll();
+  @Patch(':uuid')
+  @ApiOperation({ summary: 'Asignar cliente o actualizar datos del proyecto' })
+  async update(@Param('uuid') uuid: string, @Body() dto: UpdateProyectoDto) {
+    const res = await this.proyectosService.update(uuid, dto);
+    if (!res.exitoso) {
+      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
+    }
+    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.proyectoService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProyectoDto: UpdateProyectoDto) {
-    return this.proyectoService.update(+id, updateProyectoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.proyectoService.remove(+id);
-  }
 }

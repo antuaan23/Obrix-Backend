@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Trabajador } from './entities/trabajador.entity';
+import { Result } from 'src/result';
 
 @Injectable()
 export class TrabajadorService {
@@ -13,14 +14,17 @@ export class TrabajadorService {
     private readonly trabajadorRepository: Repository<Trabajador>,
   ) {}
 
-  async findAll() {
-    return await this.trabajadorRepository.find({
+  async findAll(): Promise<Result<Trabajador[]>> {
+
+    const trabajadores = await this.trabajadorRepository.find({
       select: {
         uuid:true, 
         email:true, 
         activo:true
-      }
+      },
     });
+
+    return Result.ok(trabajadores, 'lista de trabajadores obtenida correctamente');
   }
 
   findOne(id: number) {

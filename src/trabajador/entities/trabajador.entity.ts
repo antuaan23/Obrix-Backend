@@ -1,5 +1,7 @@
+import { UpdateClienteDto } from 'src/cliente/dto/update-cliente.dto';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany, UpdateDateColumn, ManyToMany} from 'typeorm';
+import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 
 @Entity('trabajadores')
 
@@ -20,9 +22,15 @@ export class Trabajador {
     @CreateDateColumn()
     creadoEl!: Date
 
+    @UpdateDateColumn()
+    actualizadoEl!: Date
+
     @Column()
     activo!: boolean;
 
     @OneToMany(() => Cliente, (cliente) => cliente.trabajador)
     clientes!: Cliente[]
+
+    @ManyToMany(() => Proyecto, (proyecto) => proyecto.trabajadores)
+    proyectos!: Proyecto[];
 }

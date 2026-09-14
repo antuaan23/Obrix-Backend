@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for obrix-backend on 2026-09-11T19:47:09Z
+# fly.toml app configuration file generated for obrix-backend on 2026-09-11T17:26:55-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -7,7 +7,6 @@ app = 'obrix-backend'
 primary_region = 'gru'
 
 [build]
-
 [http_service]
   internal_port = 3000
   force_https = true
@@ -17,7 +16,6 @@ primary_region = 'gru'
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
+  memory = '256mb'
   cpus = 1
   memory_mb = 256

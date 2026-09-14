@@ -5,6 +5,7 @@ import { TrabajadorModule } from './trabajador/trabajador.module';
 import { AuthModule } from './auth/auth.module';
 import { ProyectoModule } from './proyecto/proyecto.module';
 import { ClienteModule } from './cliente/cliente.module';
+import { GastoModule } from './gasto/gasto.module';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { ClienteModule } from './cliente/cliente.module';
             ? { rejectUnauthorized: false }
             : false,
         autoLoadEntities: true,
-        synchronize: true, // ¡Atención! Activa sincronización solo en entorno de desarrollo
+        synchronize: true, 
       }),
     }),
 
@@ -33,6 +34,7 @@ import { ClienteModule } from './cliente/cliente.module';
     AuthModule,
     ProyectoModule,
     ClienteModule,
+    GastoModule,
   ],
 })
 export class AppModule {}
