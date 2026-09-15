@@ -13,7 +13,7 @@ export class Cliente {
     @Generated('uuid')
     uuid!: string;
 
-    @Column({ unique: true })
+    @Column({ type: 'varchar', length: 25 })
     nombre!: string;
 
     @Column()
@@ -22,7 +22,7 @@ export class Cliente {
     @Column()
     ap_materno!: string;
 
-    @Column()
+    @Column({ unique: true})
     email!: string;
 
     @Column()
