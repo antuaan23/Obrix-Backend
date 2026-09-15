@@ -5,8 +5,14 @@ export class ClienteResumenDto {
   @ApiProperty({ example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' })
   uuid!: string;
 
-  @ApiProperty({ example: 'Neymar Jr' })
+  @ApiProperty({ example: 'Neymar ' })
   nombre!: string;
+
+  @ApiProperty({ example: 'Santos' })
+  ap_paterno!: string;
+
+  @ApiProperty({ example: 'Júnior' })
+  ap_materno!: string;
 
   @ApiProperty({ example: 'neymar@gmail.com' })
   email!: string;
@@ -56,6 +62,8 @@ export class ProyectoResponseDto {
         ? {
             uuid: proyecto.cliente.uuid,
             nombre: proyecto.cliente.nombre,
+            ap_paterno: proyecto.cliente.ap_paterno,
+            ap_materno: proyecto.cliente.ap_materno,
             email: proyecto.cliente.email,
           }
         : undefined,

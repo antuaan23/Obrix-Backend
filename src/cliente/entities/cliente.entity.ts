@@ -17,10 +17,10 @@ export class Cliente {
     nombre!: string;
 
     @Column()
-    appaterno!: string;
+    ap_paterno!: string;
 
     @Column()
-    apmaterno!: string;
+    ap_materno!: string;
 
     @Column()
     email!: string;

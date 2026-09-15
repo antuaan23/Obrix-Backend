@@ -17,7 +17,7 @@ export class CreateClienteDto {
     })
     @IsString()
     @IsNotEmpty()
-    appaterno!: string;
+    ap_paterno!: string;
 
     @ApiProperty({
         description: 'Apellido materno del cliente',
@@ -25,7 +25,7 @@ export class CreateClienteDto {
     })
     @IsString()
     @IsOptional()
-    apmaterno!: string;
+    ap_materno!: string;
 
     @ApiProperty({
         description: 'Correo del cliente',
