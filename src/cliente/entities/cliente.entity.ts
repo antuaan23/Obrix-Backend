@@ -13,16 +13,16 @@ export class Cliente {
     @Generated('uuid')
     uuid!: string;
 
-    @Column({ unique: true })
+    @Column({ type: 'varchar', length: 25 })
     nombre!: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 25})
     appaterno!: string;
 
-    @Column()
+    @Column({ type: 'varchar', length:25, nullable:true})
     apmaterno!: string;
 
-    @Column()
+    @Column({ unique: true})
     email!: string;
 
     @Column()
