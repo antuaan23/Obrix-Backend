@@ -16,17 +16,21 @@ export class TrabajadorService {
     private readonly trabajadorRepository: Repository<Trabajador>,
   ) {}
 
-  async findAll(): Promise<Result<Trabajador[]>> {
-
+  async findAll(): Promise<Result<TrabajadorDto[]>> {
     const trabajadores = await this.trabajadorRepository.find({
       select: {
-        uuid:true, 
-        email:true, 
-        activo:true
-      },
+        uuid: true,
+        rut: true,
+        nombre: true,
+        ap_paterno: true, // o apPaterno según la Opción elegida
+        ap_materno: true,
+        email: true,
+        telefono: true,
+        activo: true
+      }
     });
-
-    return Result.ok(trabajadores, 'lista de trabajadores obtenida correctamente');
+  
+    return Result.ok(trabajadores, 'Lista de trabajadores obtenida correctamente');
   }
 
   async findOne(uuid: string): Promise<Result<TrabajadorDto>> {
