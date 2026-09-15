@@ -13,17 +13,32 @@ export class Trabajador {
     @Generated('uuid')
     uuid!: string;
 
+    @Column({type: 'varchar', length: 10, unique: true })
+    rut!: string;
+
+    @Column({type: 'varchar', length: 25 })
+    nombre!: string;
+
+    @Column({type: 'varchar', length: 25 })
+    ap_paterno!: string;
+
+    @Column({type: 'varchar', length: 25, nullable: true })
+    ap_materno!: string;
+
     @Column({ unique: true })
     email!: string;
 
-    @Column()
+    @Column({type: 'varchar', length: 250 })
     password!: string;
 
+    @Column({type: 'varchar', length: 12, nullable: true })
+    telefono!: string;
+
     @CreateDateColumn()
-    creadoEl!: Date
+    creado_el!: Date
 
     @UpdateDateColumn()
-    actualizadoEl!: Date
+    actualizado_el!: Date
 
     @Column()
     activo!: boolean;

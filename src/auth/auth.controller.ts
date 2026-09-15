@@ -11,6 +11,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { CreateTrabajadorDto } from '../trabajador/dto/create-trabajador.dto';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -27,8 +28,8 @@ export class AuthController {
     status: 400,
     description: 'El correo electrónico ya se encuentra registrado.',
   })
-  async register(@Body() createTrabajadorDto: CreateTrabajadorDto) {
-    const res = await this.authService.registro(createTrabajadorDto);
+  async register(@Body() registerDto: RegisterDto) {
+    const res = await this.authService.registro(registerDto);
 
     if (!res.exitoso) {
       throw new BadRequestException({

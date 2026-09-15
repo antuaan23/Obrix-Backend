@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, NotFoundException, HttpStatus, HttpCode } from '@nestjs/common';
 import { TrabajadorService } from './trabajador.service';
 import { CreateTrabajadorDto } from './dto/create-trabajador.dto';
 import { UpdateTrabajadorDto } from './dto/update-trabajador.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { TrabajadorListResponseDto, ErrorResponseDto } from './dto/trabajador-response.dto';
+import { TrabajadorListResponseDto, ErrorResponseDto, TrabajadorDto } from './dto/trabajador-response.dto';
 
 @Controller('trabajador')
 export class TrabajadorController {
@@ -38,9 +38,25 @@ export class TrabajadorController {
     };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.trabajadorService.findOne(+id);
+  @Get(':uuid')
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('uuid') uuid: string) {
+    const resultado = await this.trabajadorService.findOne(uuid);
+  
+    // 1. Si la búsqueda no fue exitosa, lanzamos un error 404 (o 400)
+    if (!resultado.exitoso) {
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: resultado.descripcion,
+      });
+    }
+  
+    // 2. Si fue exitosa, retornamos la respuesta limpia con código 200 OK
+    return {
+      exitoso: resultado.exitoso,
+      descripcion: resultado.descripcion,
+      respuesta: resultado._resultado,
+    };
   }
 
   @Patch(':id')

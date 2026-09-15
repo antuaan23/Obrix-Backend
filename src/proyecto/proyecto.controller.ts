@@ -34,6 +34,30 @@ export class ProyectoController {
     };
   }  
 
+  @Get(':uuid')
+  @ApiOperation({ summary: 'Obtener proyecto por UUID.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Proyecto encontrado exitosamente.',
+    type: [ProyectoResponseDto],
+  })
+  async findOne(@Param('uuid') uuid: string) {
+    const res = await this.proyectosService.findOne(uuid);
+
+    if (!res.exitoso) {
+      throw new InternalServerErrorException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
+  }  
+
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo proyecto (solo con nombre o con datos opcionales)' })
   async crear(@Body() dto: CreateProyectoDto) {

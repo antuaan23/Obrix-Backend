@@ -25,7 +25,7 @@ export class RegisterDto {
     })
     @IsString()
     @IsNotEmpty()
-    apPaterno!: string;
+    ap_paterno!: string;
 
     @ApiProperty({
         description: 'Apellido materno del trabajador',
@@ -33,7 +33,7 @@ export class RegisterDto {
     })
     @IsString()
     @IsOptional()
-    apMaterno!: string;
+    ap_materno!: string;
 
     @ApiProperty({
         description: 'Correo del trabajador',
@@ -41,7 +41,15 @@ export class RegisterDto {
     })
     @IsEmail()
     @IsNotEmpty()
-    correo!: string;
+    email!: string;
+
+    @ApiProperty({
+        description: 'Contraseña del trabajdor',
+        example: '12345678'
+    })
+    @IsString()
+    @IsNotEmpty()
+    password!: string;
 
     @ApiProperty({
         description: 'Telefono del trabajador',
@@ -50,13 +58,5 @@ export class RegisterDto {
     @IsString()
     @IsNotEmpty()
     telefono!: string;
-
-    @ApiProperty({
-        description: 'Servicio que entrega el trabajador',
-        example: 'Gasfitería'
-    })
-    @IsString()
-    @IsNotEmpty()
-    servicio!: string;
 
 }

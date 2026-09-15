@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { CreateTrabajadorDto } from '../trabajador/dto/create-trabajador.dto';
+import { RegisterDto } from './dto/register.dto'; // Importamos el RegisterDto ajustado
 import { LoginDto } from './dto/login.dto';
 import { Trabajador } from 'src/trabajador/entities/trabajador.entity';
-import { Result } from 'src/result'; // Ajusta la ruta según tu proyecto
+import { Result } from 'src/result';
 
 export interface AuthPayload {
   access_token: string;
@@ -21,27 +21,40 @@ export class AuthService {
   ) {}
 
   // REGISTRO
-  async registro(createTrabajadorDto: CreateTrabajadorDto): Promise<Result<Omit<Trabajador, 'password'>>> {
-    const { email, password } = createTrabajadorDto;
+  async registro(registerDto: RegisterDto): Promise<Result<Omit<Trabajador, 'password'>>> {
+    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } = registerDto;
 
-    // 1. Verificar si el correo ya existe
-    const existeUsuario = await this.trabajadorRepository.findOne({ where: { email } });
-    if (existeUsuario) {
-      return Result.fallo<Omit<Trabajador, 'password'>>('El usuario ya está registrado.');
+    // 1. Verificar si ya existe un trabajador con el mismo email o RUT
+    const usuarioExistente = await this.trabajadorRepository.findOne({
+      where: [{ email }, { rut }],
+    });
+
+    if (usuarioExistente) {
+      const mensaje = usuarioExistente.email === email 
+        ? 'El correo electrónico ya está registrado.' 
+        : 'El RUT ya se encuentra registrado.';
+      return Result.fallo<Omit<Trabajador, 'password'>>(mensaje);
     }
 
     // 2. Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Crear y guardar nuevo usuario
+    // 3. Crear instancia con todos los datos recibidos del formulario
     const nuevoUsuario = this.trabajadorRepository.create({
+      rut,
+      nombre,
+      ap_paterno,
+      ap_materno,
       email,
       password: hashedPassword,
+      telefono,
       activo: true,
     });
+
+    // 4. Guardar en base de datos
     await this.trabajadorRepository.save(nuevoUsuario);
 
-    // 4. Excluir password de la respuesta
+    // 5. Excluir password de la respuesta devuelta
     const { password: _, ...usuarioSinPassword } = nuevoUsuario;
     return Result.ok(usuarioSinPassword, 'Trabajador registrado exitosamente.');
   }
