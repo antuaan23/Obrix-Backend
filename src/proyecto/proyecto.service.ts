@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Proyecto } from './entities/proyecto.entity';
 import { Repository } from 'typeorm';
 import { Result } from 'src/result';
-import { Trabajador } from 'src/trabajador/entities/trabajador.entity';
+import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 
 @Injectable()
@@ -15,18 +15,18 @@ export class ProyectoService {
     @InjectRepository(Proyecto)
     private readonly proyectoRepository: Repository<Proyecto>,
 
-    @InjectRepository(Trabajador)
-    private readonly trabajadorRepository: Repository<Trabajador>
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>
   ) {}
 
   async create(dto: CreateProyectoDto): Promise<Result<ProyectoResponseDto>> {
-    // 1. Validar y obtener el trabajador
-    const trabajador = await this.trabajadorRepository.findOne({
-      where: { uuid: dto.uuidTrabajador },
+    // 1. Validar y obtener el usuario
+    const usuario = await this.usuarioRepository.findOne({
+      where: { uuid: dto.uuidUsuario },
     });
   
-    if (!trabajador) {
-      return Result.fallo<ProyectoResponseDto>('El trabajador especificado no existe.');
+    if (!usuario) {
+      return Result.fallo<ProyectoResponseDto>('El usuario especificado no existe.');
     }
   
     // 2. Crear la entidad
@@ -34,7 +34,7 @@ export class ProyectoService {
       nombre: dto.nombre,
       servicio: dto.servicio,
       presupuesto: dto.presupuesto,
-      trabajadores: [trabajador],
+      usuarios: [usuario],
       cliente: dto.cliente, // Cascade insert
     });
   
@@ -46,7 +46,7 @@ export class ProyectoService {
       where: { uuid: proyectoGuardado.uuid },
       relations: {
         cliente: true,
-        trabajadores: true,
+        usuarios: true,
       },
     });
   
@@ -63,7 +63,7 @@ export class ProyectoService {
     const proyectos = await this.proyectoRepository.find({
       relations: {
         cliente: true,
-        trabajadores: true,
+        usuarios: true,
       },
       order: {
         creadoEl: 'DESC',
@@ -79,7 +79,7 @@ export class ProyectoService {
       where: { uuid },
       relations: {
         cliente: true,
-        trabajadores: true,
+        usuarios: true,
       },
     });
 
@@ -95,7 +95,7 @@ export class ProyectoService {
       where: { uuid },
       relations: {
         cliente: true,
-        trabajadores: true,
+        usuarios: true,
       }
     });
 

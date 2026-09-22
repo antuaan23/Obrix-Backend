@@ -3,13 +3,14 @@ import { Cliente } from 'src/cliente/entities/cliente.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany, UpdateDateColumn, ManyToMany} from 'typeorm';
 import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 
-@Entity('trabajadores')
+@Entity('usuarios')
 
-export class Trabajador {
+export class Usuario {
+
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ unique: true })
+    @Column({ type: 'uuid', unique: true })
     @Generated('uuid')
     uuid!: string;
 
@@ -34,18 +35,18 @@ export class Trabajador {
     @Column({type: 'varchar', length: 12, nullable: true })
     telefono!: string;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamp',  })
     creado_el!: Date
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamp' })
     actualizado_el!: Date
 
-    @Column()
+    @Column({ type: 'boolean', default: true })
     activo!: boolean;
 
-    @OneToMany(() => Cliente, (cliente) => cliente.trabajador)
+    @OneToMany(() => Cliente, (cliente) => cliente.usuario)
     clientes!: Cliente[]
 
-    @ManyToMany(() => Proyecto, (proyecto) => proyecto.trabajadores)
+    @ManyToMany(() => Proyecto, (proyecto) => proyecto.usuarios)
     proyectos!: Proyecto[];
 }

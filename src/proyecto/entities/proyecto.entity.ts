@@ -13,14 +13,14 @@ import {
 } from "typeorm";
 import { Cliente } from "../../cliente/entities/cliente.entity";
 import { Gasto } from "src/gasto/entities/gasto.entity";
-import { Trabajador } from "src/trabajador/entities/trabajador.entity";
+import { Usuario } from "src/usuario/entities/usuario.entity";
 
 @Entity('proyectos')
 export class Proyecto {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ unique: true })
+  @Column({ type: 'uuid', unique: true })
   @Generated('uuid')
   uuid!: string;
 
@@ -45,17 +45,17 @@ export class Proyecto {
   @OneToMany(() => Gasto, (gasto) => gasto.proyecto)
   gastos!: Gasto[];
 
-  @ManyToMany(() => Trabajador, (trabajador) => trabajador.proyectos)
+  @ManyToMany(() => Usuario, (usuario) => usuario.proyectos)
   @JoinTable({
-    name: 'proyectos_trabajadores',
+    name: 'proyectos_usuarios',
     joinColumn: { name: 'proyecto_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'trabajador_id', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'usuario_id', referencedColumnName: 'id' }
   })
-  trabajadores!: Trabajador[];
+  usuarios!: Usuario[];
 
-  @CreateDateColumn({ name: 'creado_el' })
+  @CreateDateColumn({ type: 'timestamp' , name: 'creado_el' })
   creadoEl!: Date;
 
-  @UpdateDateColumn({ name: 'actualizado_el' })
+  @UpdateDateColumn({ type: 'timestamp' , name: 'actualizado_el' })
   actualizadoEl!: Date;
 }

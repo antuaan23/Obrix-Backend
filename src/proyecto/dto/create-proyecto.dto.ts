@@ -12,12 +12,12 @@ import { CreateClienteDto } from "src/cliente/dto/create-cliente.dto";
 
 export class CreateProyectoDto {
   @ApiProperty({
-    description: 'UUID del trabajador asignado',
+    description: 'UUID del usuario asignado',
     example: '123e4567-e89b-12d3-a456-426614174000'
   })
   @IsUUID()
   @IsNotEmpty()
-  uuidTrabajador!: string;
+  uuidUsuario!: string;
 
   @ApiProperty({
     description: 'Nombre del proyecto',

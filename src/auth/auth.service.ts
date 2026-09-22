@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto'; // Importamos el RegisterDto ajustado
 import { LoginDto } from './dto/login.dto';
-import { Trabajador } from 'src/trabajador/entities/trabajador.entity';
+import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { Result } from 'src/result';
 
 export interface AuthPayload {
@@ -15,17 +15,17 @@ export interface AuthPayload {
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(Trabajador)
-    private readonly trabajadorRepository: Repository<Trabajador>,
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
     private readonly jwtService: JwtService,
   ) {}
 
   // REGISTRO
-  async registro(registerDto: RegisterDto): Promise<Result<Omit<Trabajador, 'password'>>> {
+  async registro(registerDto: RegisterDto): Promise<Result<Omit<Usuario, 'password'>>> {
     const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } = registerDto;
 
-    // 1. Verificar si ya existe un trabajador con el mismo email o RUT
-    const usuarioExistente = await this.trabajadorRepository.findOne({
+    // 1. Verificar si ya existe un usuario con el mismo email o RUT
+    const usuarioExistente = await this.usuarioRepository.findOne({
       where: [{ email }, { rut }],
     });
 
@@ -33,14 +33,14 @@ export class AuthService {
       const mensaje = usuarioExistente.email === email 
         ? 'El correo electrónico ya está registrado.' 
         : 'El RUT ya se encuentra registrado.';
-      return Result.fallo<Omit<Trabajador, 'password'>>(mensaje);
+      return Result.fallo<Omit<Usuario, 'password'>>(mensaje);
     }
 
     // 2. Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 3. Crear instancia con todos los datos recibidos del formulario
-    const nuevoUsuario = this.trabajadorRepository.create({
+    const nuevoUsuario = this.usuarioRepository.create({
       rut,
       nombre,
       ap_paterno,
@@ -52,11 +52,11 @@ export class AuthService {
     });
 
     // 4. Guardar en base de datos
-    await this.trabajadorRepository.save(nuevoUsuario);
+    await this.usuarioRepository.save(nuevoUsuario);
 
     // 5. Excluir password de la respuesta devuelta
     const { password: _, ...usuarioSinPassword } = nuevoUsuario;
-    return Result.ok(usuarioSinPassword, 'Trabajador registrado exitosamente.');
+    return Result.ok(usuarioSinPassword, 'Usuario registrado exitosamente.');
   }
 
   // LOGIN
@@ -64,7 +64,7 @@ export class AuthService {
     const { email, password } = loginDto;
 
     // 1. Buscar usuario
-    const usuario = await this.trabajadorRepository.findOne({ where: { email } });
+    const usuario = await this.usuarioRepository.findOne({ where: { email } });
     if (!usuario) {
       return Result.fallo<AuthPayload>('Credenciales inválidas.');
     }

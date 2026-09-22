@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { TrabajadorModule } from '../trabajador/trabajador.module';
+import { UsuarioModule } from '../usuario/usuario.module';
 import { JwtModule } from '@nestjs/jwt';
-import { Trabajador } from 'src/trabajador/entities/trabajador.entity';
+import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
@@ -12,7 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       secret: process.env.JWT_SECRET || 'secretKey',
       signOptions: { expiresIn: '1d' },
     }),
-    TypeOrmModule.forFeature([Trabajador]),
+    TypeOrmModule.forFeature([Usuario]),
   ],
   controllers: [AuthController],
   providers: [AuthService],

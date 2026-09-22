@@ -12,10 +12,7 @@ export class ClienteController {
     return this.clienteService.create(createClienteDto);
   }
 
-  @Get()
-  findAll() {
-    return this.clienteService.findAll();
-  }
+ 
 
   @Get(':id')
   findOne(@Param('id') id: string) {

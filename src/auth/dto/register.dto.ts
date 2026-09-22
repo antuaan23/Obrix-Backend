@@ -4,7 +4,7 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 export class RegisterDto {
 
     @ApiProperty({
-        description: 'RUT del trabajador',
+        description: 'RUT del usuario',
         example: '12345678-9'
     })
     @IsString()
@@ -12,7 +12,7 @@ export class RegisterDto {
     rut!: string;
 
     @ApiProperty({
-        description: 'Nombre del trabajador',
+        description: 'Nombre del usuario',
         example: 'Leo'
     })
     @IsString()
@@ -20,7 +20,7 @@ export class RegisterDto {
     nombre!: string;
 
     @ApiProperty({
-        description: 'Apellido paterno del trabajador',
+        description: 'Apellido paterno del usuario',
         example: 'Messi'
     })
     @IsString()
@@ -28,7 +28,7 @@ export class RegisterDto {
     ap_paterno!: string;
 
     @ApiProperty({
-        description: 'Apellido materno del trabajador',
+        description: 'Apellido materno del usuario',
         example: 'Cuccitini'
     })
     @IsString()
@@ -36,7 +36,7 @@ export class RegisterDto {
     ap_materno!: string;
 
     @ApiProperty({
-        description: 'Correo del trabajador',
+        description: 'Correo del usuario',
         example: 'leo.messi10@gmail.com'
     })
     @IsEmail()
@@ -44,7 +44,7 @@ export class RegisterDto {
     email!: string;
 
     @ApiProperty({
-        description: 'Contraseña del trabajdor',
+        description: 'Contraseña del usuario',
         example: '12345678'
     })
     @IsString()
@@ -52,7 +52,7 @@ export class RegisterDto {
     password!: string;
 
     @ApiProperty({
-        description: 'Telefono del trabajador',
+        description: 'Telefono del usuario',
         example: '+56912345678'
     })
     @IsString()

@@ -18,11 +18,11 @@ export class ClienteResumenDto {
   email!: string;
 }
 
-export class TrabajadorResumenDto {
+export class UsuarioResumenDto {
   @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
   uuid!: string;
 
-  @ApiProperty({ example: 'trabajador@gmail.com' })
+  @ApiProperty({ example: 'usuario@gmail.com' })
   email!: string;
 
   @ApiProperty({ example: true })
@@ -48,8 +48,8 @@ export class ProyectoResponseDto {
   @ApiPropertyOptional({ type: ClienteResumenDto })
   cliente?: ClienteResumenDto;
 
-  @ApiProperty({ type: [TrabajadorResumenDto] })
-  trabajadores!: TrabajadorResumenDto[];
+  @ApiProperty({ type: [UsuarioResumenDto] })
+  usuarios!: UsuarioResumenDto[];
 
   static fromEntity(proyecto: Proyecto): ProyectoResponseDto {
     return {
@@ -67,11 +67,11 @@ export class ProyectoResponseDto {
             email: proyecto.cliente.email,
           }
         : undefined,
-      trabajadores:
-        proyecto.trabajadores?.map((t) => ({
-          uuid: t.uuid,
-          email: t.email,
-          activo: t.activo,
+      usuarios:
+        proyecto.usuarios?.map((u) => ({
+          uuid: u.uuid,
+          email: u.email,
+          activo: u.activo,
         })) || [],
     };
   }
