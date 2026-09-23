@@ -4,14 +4,19 @@ import {
   Column, 
   CreateDateColumn, 
   ManyToOne, 
-  JoinColumn 
+  JoinColumn, 
+  Generated
 } from "typeorm";
 import { Proyecto } from "../../proyecto/entities/proyecto.entity";
 import { Usuario } from "../../usuario/entities/usuario.entity";
 
 @Entity('gastos')
 export class Gasto {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
+  id!: number;
+
+  @Column({ type: 'uuid', unique: true })
+  @Generated('uuid')
   uuid!: string;
 
   @Column({ type: 'varchar', length: 150 })
