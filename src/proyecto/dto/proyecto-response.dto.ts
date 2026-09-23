@@ -16,6 +16,9 @@ export class ClienteResumenDto {
 
   @ApiProperty({ example: 'neymar@gmail.com' })
   email!: string;
+
+  @ApiProperty({ example: '+56912345678' })
+  telefono!: string;
 }
 
 export class UsuarioResumenDto {
@@ -65,6 +68,7 @@ export class ProyectoResponseDto {
             ap_paterno: proyecto.cliente.ap_paterno,
             ap_materno: proyecto.cliente.ap_materno,
             email: proyecto.cliente.email,
+            telefono: proyecto.cliente.telefono
           }
         : undefined,
       usuarios:
