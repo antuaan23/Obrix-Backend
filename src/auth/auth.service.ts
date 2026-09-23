@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto'; // Importamos el RegisterDto ajustado
 import { LoginDto } from './dto/login.dto';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
-import { Result } from 'src/result';
+import { Result } from 'src/common/interfaces/result';
 
 export interface AuthPayload {
   access_token: string;

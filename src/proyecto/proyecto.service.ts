@@ -4,7 +4,7 @@ import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Proyecto } from './entities/proyecto.entity';
 import { Repository } from 'typeorm';
-import { Result } from 'src/result';
+import { Result } from 'src/common/interfaces/result';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 

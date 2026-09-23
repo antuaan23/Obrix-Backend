@@ -1,35 +1,44 @@
 import { 
-    Entity, 
-    PrimaryGeneratedColumn, 
-    Column, 
-    CreateDateColumn, 
-    ManyToOne, 
-    JoinColumn 
-  } from "typeorm";
-  import { Proyecto } from "../../proyecto/entities/proyecto.entity"; // Ajusta la ruta a tu entidad Proyecto
-  
-  @Entity('gastos')
-  export class Gasto {
-    @PrimaryGeneratedColumn('uuid')
-    uuid!: string;
-  
-    @Column({ type: 'varchar', length: 150 })
-    nombre!: string;
-  
-    @Column({ type: 'text' })
-    descripcion!: string;
-  
-    // Guarda la URL o ruta local del archivo de comprobante
-    @Column({ type: 'varchar', nullable: true })
-    imagenUrl?: string;
-  
-    // Relación Muchos a Uno con la entidad Proyecto
-    @ManyToOne(() => Proyecto, (proyecto) => proyecto.gastos, { 
-      onDelete: 'CASCADE' // Si se elimina el proyecto, se eliminan sus gastos
-    })
-    @JoinColumn({ name: 'proyecto_id' }) // Crea la columna clave foránea 'proyecto_id' en la tabla
-    proyecto!: Proyecto;
-  
-    @CreateDateColumn({ type: 'timestamp', name: 'creado_el' })
-    creadoEl!: Date;
-  }
+  Entity, 
+  PrimaryGeneratedColumn, 
+  Column, 
+  CreateDateColumn, 
+  ManyToOne, 
+  JoinColumn 
+} from "typeorm";
+import { Proyecto } from "../../proyecto/entities/proyecto.entity";
+import { Usuario } from "../../usuario/entities/usuario.entity";
+
+@Entity('gastos')
+export class Gasto {
+  @PrimaryGeneratedColumn('uuid')
+  uuid!: string;
+
+  @Column({ type: 'varchar', length: 150 })
+  nombre!: string;
+
+  @Column({ type: 'text' })
+  descripcion!: string;
+
+  // NUEVO: Campo para el monto en dinero
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  monto!: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  imagenUrl?: string;
+
+  // Relación con Proyecto
+  @ManyToOne(() => Proyecto, (proyecto) => proyecto.gastos, { 
+    onDelete: 'CASCADE' 
+  })
+  @JoinColumn({ name: 'proyecto_id' })
+  proyecto!: Proyecto;
+
+  // Relación con Usuario que registró el gasto
+  @ManyToOne(() => Usuario, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'usuario_id' })
+  usuario?: Usuario;
+
+  @CreateDateColumn({ type: 'timestamp', name: 'creado_el' })
+  creadoEl!: Date;
+}

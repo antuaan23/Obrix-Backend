@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Usuario } from './entities/usuario.entity';
-import { Result } from 'src/result';
+import { Result } from 'src/common/interfaces/result';
 import { NotFoundError } from 'rxjs';
 import { UsuarioDto } from './dto/usuario-response.dto';
 

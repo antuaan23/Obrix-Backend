@@ -29,7 +29,7 @@ export class Usuario {
     @Column({ unique: true })
     email!: string;
 
-    @Column({type: 'varchar', length: 250 })
+    @Column({ select: false, type: 'varchar', length: 250 })
     password!: string;
 
     @Column({type: 'varchar', length: 12, nullable: true })

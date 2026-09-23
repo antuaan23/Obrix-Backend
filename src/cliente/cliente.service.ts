@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { Repository } from 'typeorm';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
+import { ClienteResponseDto } from './dto/proyecto-response.dto';
+import { Result } from 'src/common/interfaces/result';
 
 @Injectable()
 export class ClienteService {
@@ -17,14 +19,18 @@ export class ClienteService {
     private readonly usuarioRepository: Repository<Usuario>
   ){}
 
-  create(createClienteDto: CreateClienteDto) {
-    return 'This action adds a new cliente';
-  }
+  async findOne(uuid: string): Promise<Result<ClienteResponseDto>> {
+    const cliente = await this.clienteRepository.findOne({
+      where : { uuid },
+      relations: {
+        usuario: true
+      },
+    })
+    if (!cliente) {
+      return Result.fallo<ClienteResponseDto>('Proyecto no encontrado.');
+    }
 
-
-
-  findOne(id: number) {
-    return `This action returns a #${id} cliente`;
+    return Result.ok(ClienteResponseDto.fromEntity(cliente), 'Proyecto encontrado.');
   }
 
   update(id: number, updateClienteDto: UpdateClienteDto) {

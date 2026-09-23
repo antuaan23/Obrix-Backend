@@ -1,10 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateGastoDto {
   @ApiProperty({
-    description: 'Nombre del gasto',
-    example: 'Vulcanita',
+    description: 'Nombre o título corto del gasto',
+    example: 'Compra de Vulcanita y Perfiles',
   })
   @IsString()
   @IsNotEmpty()
@@ -12,24 +13,34 @@ export class CreateGastoDto {
 
   @ApiProperty({
     description: 'Descripción detallada del gasto',
-    example: 'Planchas de vulcanita 15mm para tabiquería',
+    example: 'Planchas de vulcanita 15mm y montantes para tabiquería',
   })
   @IsString()
   @IsNotEmpty()
   descripcion!: string;
 
   @ApiProperty({
-    description: 'UUID del proyecto al que pertenece el gasto',
+    description: 'Monto total del gasto en CLP',
+    example: 45000,
+  })
+  @Type(() => Number)
+  @IsNumber()
+  @IsNotEmpty()
+  monto!: number;
+
+  @ApiProperty({
+    description: 'UUID del proyecto asociado',
     example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   })
   @IsUUID()
   @IsNotEmpty()
   proyectoId!: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: 'string',
     format: 'binary',
-    description: 'Comprobante o imagen del gasto (JPG, PNG, PDF)',
+    description: 'Archivo o comprobante del gasto',
   })
+  @IsOptional()
   imagen?: any;
 }
