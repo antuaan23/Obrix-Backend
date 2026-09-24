@@ -55,6 +55,7 @@ export class StorageService {
       Key: nombreUnico,
       Body: file.buffer,
       ContentType: file.mimetype,
+      ACL: 'public-read'
     });
 
     try {
