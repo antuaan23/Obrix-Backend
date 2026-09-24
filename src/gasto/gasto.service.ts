@@ -69,4 +69,20 @@ export class GastoService {
 
     return Result.ok<Gasto>(gastoGuardado, 'Gasto registrado exitosamente.');
   }
+
+  async findByProyectoUuid(proyectoUuid: string): Promise<Result<Gasto[]>>{
+    const gasto = await this.gastoRepository.find({
+      where: { proyecto : { uuid: proyectoUuid } },
+      relations: {
+        usuario: true
+      },
+      order: { creadoEl: 'DESC' }
+    });
+
+    if(!gasto){
+      return Result.fallo<Gasto[]>('El gasto solicitado no existe.');
+    }
+
+    return Result.ok<Gasto[]>(gasto);
+  }
 }

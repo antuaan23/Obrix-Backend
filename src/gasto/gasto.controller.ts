@@ -4,7 +4,11 @@ import {
   Body, 
   UseGuards, 
   UseInterceptors, 
-  UploadedFile 
+  UploadedFile, 
+  BadRequestException,
+  Get,
+  Param,
+  NotFoundException
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -28,8 +32,27 @@ export class GastoController {
   async create(
     @Body() dto: CreateGastoDto,
     @GetUser('uuid') usuarioUuid: string,
-    @UploadedFile() file?: any, // 👈 Al poner 'any', eliminas la dependencia del namespace de Multer
+    @UploadedFile() file?: any,
   ) {
-    return await this.gastoService.create(dto, usuarioUuid, file);
+    const result = await this.gastoService.create(dto, usuarioUuid, file);
+
+    // 👈 Si el Result viene con fallo, lanzamos una excepción HTTP de NestJS
+    if (!result.exitoso) {
+      throw new BadRequestException(result.descripcion);
+    }
+
+    return result;
+  }
+
+  @Get(':uuid')
+  @ApiOperation({ summary: 'Obtener un gasto por su UUID' })
+  async findByUuid(@Param('uuid') uuid: string) {
+    const result = await this.gastoService.findByProyectoUuid(uuid);
+
+    if (!result.exitoso) {
+      throw new NotFoundException(result.descripcion);
+    }
+
+    return result;
   }
 }
