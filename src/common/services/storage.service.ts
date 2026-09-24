@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export type ArchivoSubido = {
   originalname: string;
@@ -16,7 +17,6 @@ export class StorageService {
   private readonly endpoint: string;
 
   constructor(private readonly configService: ConfigService) {
-    // Lee AWS_ENDPOINT_URL_S3 del .env o usa https://t3.storage.dev por defecto
     this.endpoint = 
       this.configService.get<string>('AWS_ENDPOINT_URL_S3') || 
       this.configService.get<string>('TIGRIS_ENDPOINT') || 
@@ -55,15 +55,39 @@ export class StorageService {
       Key: nombreUnico,
       Body: file.buffer,
       ContentType: file.mimetype,
-      ACL: 'public-read'
     });
 
     try {
       await this.s3Client.send(command);
-      return `${this.endpoint}/${this.bucketName}/${nombreUnico}`;
+      // Guardamos la ruta relativa o clave única en la BD (ej: "boletas/1790217...png")
+      return nombreUnico;
     } catch (error) {
       console.error('Error al subir archivo a Tigris:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Genera una URL firmada temporalmente para acceder de forma segura al archivo sin 403 AccessDenied
+   * @param key Clave del objeto (ej: "boletas/1790217121135-e3cm5yk.png")
+   * @param expiresIn Tiempo de validez en segundos (por defecto 1 hora)
+   */
+  async obtenerUrlFirmada(key: string, expiresIn: number = 3600): Promise<string> {
+    if (!key) return '';
+
+    // Si viene la URL completa anterior, extraemos solo la ruta relativa ("boletas/...")
+    const cleanKey = key.includes('boletas/') ? `boletas/${key.split('boletas/').pop()}` : key;
+
+    const command = new GetObjectCommand({
+      Bucket: this.bucketName,
+      Key: cleanKey,
+    });
+
+    try {
+      return await getSignedUrl(this.s3Client, command, { expiresIn });
+    } catch (error) {
+      console.error('Error al generar la URL firmada:', error);
+      return key;
     }
   }
 }

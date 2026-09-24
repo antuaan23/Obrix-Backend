@@ -14,11 +14,14 @@ export class GastoService {
   constructor(
     @InjectRepository(Gasto)
     private readonly gastoRepository: Repository<Gasto>,
+
     @InjectRepository(Proyecto)
     private readonly proyectoRepository: Repository<Proyecto>,
+
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
-    private readonly storageService: StorageService, // Inyección del servicio de Tigris
+
+    private readonly storageService: StorageService, 
   ) {}
 
   async create(
@@ -70,19 +73,25 @@ export class GastoService {
     return Result.ok<Gasto>(gastoGuardado, 'Gasto registrado exitosamente.');
   }
 
-  async findByProyectoUuid(proyectoUuid: string): Promise<Result<Gasto[]>>{
-    const gasto = await this.gastoRepository.find({
-      where: { proyecto : { uuid: proyectoUuid } },
+  async findByProyectoUuid(proyectoUuid: string): Promise<Result<Gasto[]>> {
+    const gastos = await this.gastoRepository.find({
+      where: { proyecto: { uuid: proyectoUuid } },
       relations: {
         usuario: true
       },
-      order: { creadoEl: 'DESC' }
+      order: { creadoEl: 'DESC' },
     });
 
-    if(!gasto){
-      return Result.fallo<Gasto[]>('El gasto solicitado no existe.');
-    }
+    // Mapeamos los gastos para firmar las imágenes
+    const gastosFirmados = await Promise.all(
+      gastos.map(async (gasto) => {
+        if (gasto.imagenUrl) {
+          gasto.imagenUrl = await this.storageService.obtenerUrlFirmada(gasto.imagenUrl);
+        }
+        return gasto;
+      })
+    );
 
-    return Result.ok<Gasto[]>(gasto);
+    return Result.ok<Gasto[]>(gastosFirmados, 'Gastos obtenidos con éxito.');
   }
 }
