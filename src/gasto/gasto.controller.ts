@@ -44,10 +44,10 @@ export class GastoController {
     return result;
   }
 
-  @Get(':uuid')
-  @ApiOperation({ summary: 'Obtener un gasto por su UUID' })
-  async findByUuid(@Param('uuid') uuid: string) {
-    const result = await this.gastoService.findByProyectoUuid(uuid);
+  @Get('proyecto/:proyectoUuid')
+  @ApiOperation({ summary: 'Obtener todos los gastos asociados a un proyecto' })
+  async findByProyectoUuid(@Param('proyectoUuid') proyectoUuid: string) {
+    const result = await this.gastoService.findByProyectoUuid(proyectoUuid);
 
     if (!result.exitoso) {
       throw new NotFoundException(result.descripcion);
