@@ -35,14 +35,14 @@ export class ProyectoController {
   }  
 
   @Get(':uuid')
-  @ApiOperation({ summary: 'Obtener proyecto por UUID.' })
+  @ApiOperation({ summary: 'Obtener proyecto por UUID de Usuario.' })
   @ApiResponse({
     status: 200,
     description: 'Proyecto encontrado exitosamente.',
     type: [ProyectoResponseDto],
   })
   async findOne(@Param('uuid') uuid: string) {
-    const res = await this.proyectosService.findOne(uuid);
+    const res = await this.proyectosService.findByUsuarioUuid(uuid);
 
     if (!res.exitoso) {
       throw new InternalServerErrorException({

@@ -74,20 +74,26 @@ export class ProyectoService {
     return Result.ok(respuesta, 'Lista de proyectos obtenida correctamente.');
   }
 
-  async findOne(uuid: string): Promise<Result<ProyectoResponseDto>> {
-    const proyecto = await this.proyectoRepository.findOne({
-      where: { uuid },
+  async findByUsuarioUuid(uuidUsuario: string): Promise<Result<ProyectoResponseDto[]>> {
+    const proyectos = await this.proyectoRepository.find({
+      where: {
+        usuarios: {
+          uuid: uuidUsuario,
+        },
+      },
       relations: {
         cliente: true,
         usuarios: true,
       },
     });
-
-    if (!proyecto) {
-      return Result.fallo<ProyectoResponseDto>('Proyecto no encontrado.');
+  
+    if (!proyectos || proyectos.length === 0) {
+      return Result.fallo<ProyectoResponseDto[]>('No se encontraron proyectos para el usuario.');
     }
-
-    return Result.ok(ProyectoResponseDto.fromEntity(proyecto), 'Proyecto encontrado.');
+  
+    const proyectosDto = proyectos.map((proyecto) => ProyectoResponseDto.fromEntity(proyecto));
+  
+    return Result.ok(proyectosDto, 'Proyectos del usuario encontrados.');
   }
 
   async update(uuid: string, dto: UpdateProyectoDto): Promise<Result<ProyectoResponseDto>> {
