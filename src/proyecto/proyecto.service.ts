@@ -96,6 +96,24 @@ export class ProyectoService {
     return Result.ok(proyectosDto, 'Proyectos del usuario encontrados.');
   }
 
+  async findOneByUuid(uuidProyecto: string): Promise<Result<ProyectoResponseDto>> {
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { 
+        uuid: uuidProyecto 
+      },
+      relations: {
+        cliente: true,
+        usuarios: true,
+      },
+    });
+  
+    if (!proyecto) {
+      return Result.fallo<ProyectoResponseDto>('Proyecto no encontrado.');
+    }
+  
+    return Result.ok(ProyectoResponseDto.fromEntity(proyecto), 'Proyecto encontrado.');
+  }
+
   async update(uuid: string, dto: UpdateProyectoDto): Promise<Result<ProyectoResponseDto>> {
     const proyecto = await this.proyectoRepository.findOne({ 
       where: { uuid },
