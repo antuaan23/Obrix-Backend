@@ -14,6 +14,7 @@ import {
 import { Cliente } from "../../cliente/entities/cliente.entity";
 import { Gasto } from "src/gasto/entities/gasto.entity";
 import { Usuario } from "src/usuario/entities/usuario.entity";
+import { Cotizacion } from "src/cotizacion/entities/cotizacion.entity";
 
 @Entity('proyectos')
 export class Proyecto {
@@ -52,6 +53,9 @@ export class Proyecto {
     inverseJoinColumn: { name: 'usuario_id', referencedColumnName: 'id' }
   })
   usuarios!: Usuario[];
+
+  @OneToMany(() => Cotizacion, (cotizacion) => cotizacion.proyecto)
+  cotizaciones!: Cotizacion[];
 
   @CreateDateColumn({ type: 'timestamp' , name: 'creado_el' })
   creadoEl!: Date;

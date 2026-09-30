@@ -1,17 +1,22 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
 import { Material } from './entities/material.entity';
+import { Result } from 'src/common/interfaces/result';
 
+@ApiTags('materiales')
 @Controller('materiales')
 export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
 
   @Get()
-  async findAll(): Promise<{ success: boolean; data: Material[] }> {
-    const materiales = await this.materialService.findAll();
-    return {
-      success: true,
-      data: materiales,
-    };
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Obtener catálogo completo de materiales' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de materiales obtenida correctamente.' 
+  })
+  async findAll(): Promise<Result<Material[]>> {
+    return await this.materialService.findAll();
   }
 }
