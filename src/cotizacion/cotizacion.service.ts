@@ -49,7 +49,10 @@ export class CotizacionService {
       const cantidad = Number(item.cantidad);
       const precioUnitario = Number(item.precioUnitario ?? material.precio);
 
+      const nombre = material.nombre;
+
       detalle.cantidad = cantidad;
+      detalle.nombre = nombre;
       detalle.total = cantidad * precioUnitario;
 
       totalCotizacion += detalle.total;
