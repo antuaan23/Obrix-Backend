@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Result } from 'src/common/interfaces/result';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
+import { Gasto } from 'src/gasto/entities/gasto.entity';
 
 @Injectable()
 export class ProyectoService {
@@ -16,7 +17,10 @@ export class ProyectoService {
     private readonly proyectoRepository: Repository<Proyecto>,
 
     @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>
+    private readonly usuarioRepository: Repository<Usuario>,
+
+    @InjectRepository(Gasto)
+    private readonly gastoRepository: Repository<Gasto>
   ) {}
 
   async create(dto: CreateProyectoDto): Promise<Result<ProyectoResponseDto>> {
@@ -33,7 +37,7 @@ export class ProyectoService {
     const nuevoProyecto = this.proyectoRepository.create({
       nombre: dto.nombre,
       servicio: dto.servicio,
-      presupuesto: dto.presupuesto,
+      presupuesto: 0.00,
       usuarios: [usuario],
       cliente: dto.cliente, // Cascade insert
     });
@@ -129,7 +133,7 @@ export class ProyectoService {
 
     if (dto.nombre) proyecto.nombre = dto.nombre;
     if (dto.servicio) proyecto.servicio = dto.servicio;
-    if (dto.presupuesto !== undefined) proyecto.presupuesto = dto.presupuesto;
+
 
     const actualizado = await this.proyectoRepository.save(proyecto);
     return Result.ok(ProyectoResponseDto.fromEntity(actualizado), 'Proyecto actualizado exitosamente.');
@@ -144,5 +148,49 @@ export class ProyectoService {
 
     await this.proyectoRepository.remove(proyecto);
     return Result.ok(true, 'Proyecto eliminado exitosamente.');
+  }
+
+  async obtenerPresupuestoConGastosPorUuid(uuid: string): Promise<Result<any>> {
+    // 1. Buscamos el proyecto por UUID
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { uuid },
+    });
+
+    if (!proyecto) {
+      return Result.fallo(`El proyecto con UUID ${uuid} no fue encontrado.`);
+    }
+
+    // 2. Sumamos los gastos asociados agrupando correctamente para PostgreSQL usando el uuid
+    const resultado = await this.proyectoRepository
+      .createQueryBuilder('proyecto')
+      .leftJoin('proyecto.gastos', 'gasto')
+      .select('proyecto.id', 'id')
+      .addSelect('proyecto.uuid', 'uuid')
+      .addSelect('proyecto.nombre', 'nombre')
+      .addSelect('proyecto.presupuesto', 'presupuesto')
+      .addSelect('COALESCE(SUM(gasto.monto), 0)', 'totalGastos')
+      .where('proyecto.uuid = :uuid', { uuid })
+      .groupBy('proyecto.id')
+      .addGroupBy('proyecto.uuid')
+      .addGroupBy('proyecto.nombre')
+      .addGroupBy('proyecto.presupuesto')
+      .getRawOne();
+
+    const presupuesto = Number(resultado?.presupuesto) || 0;
+    const totalGastos = Number(resultado?.totalGastos) || 0;
+    const excedido = totalGastos > presupuesto;
+    const diferencia = totalGastos - presupuesto;
+
+    const datosPresupuesto = {
+      id: proyecto.id,
+      uuid: proyecto.uuid,
+      nombre: proyecto.nombre,
+      presupuesto,
+      totalGastos,
+      excedido,
+      diferencia: excedido ? diferencia : 0,
+    };
+
+    return Result.ok(datosPresupuesto, 'Presupuesto y gastos calculados correctamente.');
   }
 }

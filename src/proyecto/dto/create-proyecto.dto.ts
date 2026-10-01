@@ -44,12 +44,4 @@ export class CreateProyectoDto {
   @IsNotEmpty()
   cliente!: CreateClienteDto;
 
-  @ApiProperty({
-    description: 'Presupuesto estimado del proyecto',
-    example: 500000,
-    required: false
-  })
-  @IsNumber()
-  @IsOptional()
-  presupuesto?: number;
 }

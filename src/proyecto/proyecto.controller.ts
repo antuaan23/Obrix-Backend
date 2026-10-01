@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, InternalServerErrorException, NotFoundException, Get } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, InternalServerErrorException, NotFoundException, Get, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
@@ -103,4 +103,22 @@ export class ProyectoController {
     return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
   }
 
+  @Get(':uuid/presupuesto')
+  @ApiOperation({ summary: 'Obtener el estado del presupuesto y total de gastos de un proyecto por UUID' })
+  async obtenerPresupuesto(@Param('uuid') uuid: string) {
+    const res = await this.proyectosService.obtenerPresupuestoConGastosPorUuid(uuid);
+
+    if (!res.exitoso) {
+      throw new NotFoundException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
+  }
 }
