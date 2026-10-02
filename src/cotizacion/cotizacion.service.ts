@@ -47,9 +47,9 @@ export class CotizacionService {
       detalle.material = material;
 
       const cantidad = Number(item.cantidad);
-      const precioUnitario = Number(item.precioUnitario ?? material.precio);
+      const precioUnitario = Number(item.precioUnitario ?? material.precio_clp);
 
-      const nombre = material.nombre;
+      const nombre = material.producto;
 
       detalle.cantidad = cantidad;
       detalle.nombre = nombre;
