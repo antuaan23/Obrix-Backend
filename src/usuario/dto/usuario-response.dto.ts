@@ -19,8 +19,11 @@ export class UsuarioDto {
   @ApiProperty({ example: 'leo.messi10@gmail.com', description: 'Correo electrónico' })
   email!: string;
 
-  @ApiPropertyOptional({ example: '+56912345678', description: 'Teléfono de contacto' })
+  @ApiProperty({ example: '+56912345678', description: 'Teléfono de contacto' })
   telefono?: string;
+
+  @ApiProperty({ example: '2', description: 'Rol del usuario' })
+  rolId?: number;
 
   @ApiProperty({ example: true, description: 'Estado de la cuenta del usuario' })
   activo!: boolean;

@@ -1,7 +1,9 @@
 import { UpdateClienteDto } from 'src/cliente/dto/update-cliente.dto';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany, UpdateDateColumn, ManyToMany} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany, UpdateDateColumn, ManyToMany, OneToOne, JoinColumn, ManyToOne} from 'typeorm';
 import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
+import { Equipo } from 'src/equipo/entities/equipo.entity';
+import { Rol } from 'src/rol/entities/rol.entity';
 
 @Entity('usuarios')
 
@@ -49,4 +51,12 @@ export class Usuario {
 
     @ManyToMany(() => Proyecto, (proyecto) => proyecto.usuarios)
     proyectos!: Proyecto[];
+
+    @ManyToOne(() => Equipo, (equipo) => equipo.usuarios, { nullable: true })
+    @JoinColumn({ name: 'equipo_id' })
+    equipo!: Equipo;
+
+    @ManyToOne(() => Rol, (rol) => rol.usuarios, { eager: true, nullable: false })
+    @JoinColumn({ name: 'rol_id' }) 
+    rol!: Rol;
 }

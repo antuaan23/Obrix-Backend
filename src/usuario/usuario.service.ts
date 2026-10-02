@@ -1,12 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUsuarioDto } from './dto/create-usuario.dto';
+import { Injectable} from '@nestjs/common';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { JwtService } from '@nestjs/jwt';
 import { Usuario } from './entities/usuario.entity';
 import { Result } from 'src/common/interfaces/result';
-import { NotFoundError } from 'rxjs';
 import { UsuarioDto } from './dto/usuario-response.dto';
 
 @Injectable()
@@ -22,10 +19,11 @@ export class UsuarioService {
         uuid: true,
         rut: true,
         nombre: true,
-        ap_paterno: true, // o apPaterno según la Opción elegida
+        ap_paterno: true, 
         ap_materno: true,
         email: true,
         telefono: true,
+        rol: true,
         activo: true
       }
     });

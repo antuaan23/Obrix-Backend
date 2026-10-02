@@ -8,6 +8,10 @@ import { GastoModule } from './gasto/gasto.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { MaterialModule } from './material/material.module';
 import { CotizacionModule } from './cotizacion/cotizacion.module';
+import { MailModule } from './mail/mail.module';
+import { EquipoModule } from './equipo/equipo.module';
+import { resolveModuleName } from 'typescript';
+import { RolModule } from './rol/rol.modules';
 
 @Module({
   imports: [
@@ -37,7 +41,10 @@ import { CotizacionModule } from './cotizacion/cotizacion.module';
     GastoModule,
     UsuarioModule,
     MaterialModule,
-    CotizacionModule
+    CotizacionModule,
+    MailModule,
+    EquipoModule,
+    RolModule
   ],
 })
 export class AppModule {}

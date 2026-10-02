@@ -7,6 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { Result } from 'src/common/interfaces/result';
+import { Rol } from 'src/rol/entities/rol.entity';
 
 export interface AuthPayload {
   access_token: string;
@@ -18,11 +19,13 @@ export class AuthService {
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
     private readonly jwtService: JwtService,
+    @InjectRepository(Rol)
+    private readonly rolRepository: Repository<Rol>
   ) {}
 
   // REGISTRO
   async registro(registerDto: RegisterDto): Promise<Result<Omit<Usuario, 'password'>>> {
-    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } = registerDto;
+    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono, rolId } = registerDto;
 
     const usuarioExistente = await this.usuarioRepository.findOne({
       where: [{ email }, { rut }],
@@ -45,6 +48,7 @@ export class AuthService {
       email,
       password: hashedPassword,
       telefono,
+      rol: { id: registerDto.rolId },
       activo: true,
     });
 

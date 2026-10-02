@@ -8,10 +8,11 @@ import { JwtStrategy } from './jwt-strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
+import { Rol } from 'src/rol/entities/rol.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Usuario]),
+    TypeOrmModule.forFeature([Usuario, Rol]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secreto_super_seguro',
