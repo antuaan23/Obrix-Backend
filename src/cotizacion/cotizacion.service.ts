@@ -8,7 +8,6 @@ import { Proyecto } from '../proyecto/entities/proyecto.entity';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 import { Result } from 'src/common/interfaces/result';
 import { PdfService } from 'src/pdf/pdf.service';
-import { COTIZACION_PDF_TEMPLATE } from 'src/pdf/templates/cotizacion-pdf.template';
 import { ProyectoService } from 'src/proyecto/proyecto.service';
 
 @Injectable()
@@ -155,7 +154,7 @@ export class CotizacionService {
       total: Number(cotizacion.montoTotal || 0),
     };
 
-    const pdfBuffer = await this.pdfService.generatePdf(COTIZACION_PDF_TEMPLATE, quoteData);
+    const pdfBuffer = await this.pdfService.generateCotizacionPdf(quoteData);
     const slug = this.slugNombreArchivo(cotizacion.nombre);
 
     return {

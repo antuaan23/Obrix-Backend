@@ -17,7 +17,7 @@ describe('CotizacionService', () => {
         { provide: getRepositoryToken(Cotizacion), useValue: {} },
         { provide: getRepositoryToken(Proyecto), useValue: {} },
         { provide: getRepositoryToken(Material), useValue: {} },
-        { provide: PdfService, useValue: { generatePdf: jest.fn() } },
+        { provide: PdfService, useValue: { generateCotizacionPdf: jest.fn() } },
         { provide: ProyectoService, useValue: { calcularYActualizarPresupuesto: jest.fn() } },
       ],
     }).compile();
