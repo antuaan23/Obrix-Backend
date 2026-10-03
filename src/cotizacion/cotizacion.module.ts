@@ -6,9 +6,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 import { Material } from 'src/material/entities/material.entity';
 import { DetalleCotizacion } from './entities/detalle-cotizacion.entity';
+import { PdfModule } from 'src/pdf/pdf.module';
+import { ProyectoModule } from 'src/proyecto/proyecto.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cotizacion, Proyecto, Material, DetalleCotizacion])],
+  imports: [
+    TypeOrmModule.forFeature([Cotizacion, Proyecto, Material, DetalleCotizacion]),
+    PdfModule,
+    ProyectoModule,
+  ],
   controllers: [CotizacionController],
   providers: [CotizacionService],
 })

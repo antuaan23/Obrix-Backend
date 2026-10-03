@@ -10,7 +10,6 @@ import { MaterialModule } from './material/material.module';
 import { CotizacionModule } from './cotizacion/cotizacion.module';
 import { MailModule } from './mail/mail.module';
 import { EquipoModule } from './equipo/equipo.module';
-import { resolveModuleName } from 'typescript';
 import { RolModule } from './rol/rol.modules';
 
 @Module({
@@ -44,7 +43,7 @@ import { RolModule } from './rol/rol.modules';
     CotizacionModule,
     MailModule,
     EquipoModule,
-    RolModule
+    RolModule,
   ],
 })
 export class AppModule {}

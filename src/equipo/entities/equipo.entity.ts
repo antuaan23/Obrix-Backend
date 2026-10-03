@@ -25,7 +25,7 @@ export class Equipo {
     @Column({ type: 'boolean', default: true })
     activo!: boolean;
 
-    @OneToMany(() => Proyecto, (proyecto) => proyecto.usuarios)
+    @OneToMany(() => Proyecto, (proyecto) => proyecto.equipo)
     proyectos!: Proyecto[];
 
     @OneToMany(() => Usuario, (usuario) => usuario.equipo)

@@ -15,6 +15,7 @@ import { Cliente } from "../../cliente/entities/cliente.entity";
 import { Gasto } from "src/gasto/entities/gasto.entity";
 import { Usuario } from "src/usuario/entities/usuario.entity";
 import { Cotizacion } from "src/cotizacion/entities/cotizacion.entity";
+import { Equipo } from "src/equipo/entities/equipo.entity";
 
 @Entity('proyectos')
 export class Proyecto {
@@ -62,4 +63,8 @@ export class Proyecto {
 
   @UpdateDateColumn({ type: 'timestamp' , name: 'actualizado_el' })
   actualizadoEl!: Date;
+
+  @ManyToOne(() => Equipo, (equipo) => equipo.proyectos, {nullable: true})
+  @JoinColumn({name: 'equipo_id'})
+  equipo!: Equipo
 }

@@ -1,12 +1,19 @@
 import { Controller, Get, Post, Body, Param, NotFoundException, BadRequestException, InternalServerErrorException, HttpStatus, HttpCode } from '@nestjs/common';
 import { EquipoService } from './equipo.service';
 import { CreateEquipoDto } from './dto/create-equipo.dto';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('equipos')
 export class EquipoController {
   constructor(private readonly equipoService: EquipoService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Obtener la lista completa de usuarios' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de usuarios recuperada exitosamente.',
+    type: CreateEquipoDto,
+  })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createEquipoDto: CreateEquipoDto) {
     const resultado = await this.equipoService.create(createEquipoDto);

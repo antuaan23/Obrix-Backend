@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Result } from 'src/common/interfaces/result';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
+import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { Gasto } from 'src/gasto/entities/gasto.entity';
 
 @Injectable()
@@ -192,5 +193,49 @@ export class ProyectoService {
     };
 
     return Result.ok(datosPresupuesto, 'Presupuesto y gastos calculados correctamente.');
+  }
+
+  /**
+   * Define el presupuesto del proyecto como la suma de montoTotal de todas sus cotizaciones.
+   * Se invoca desde el endpoint PATCH y también al crear una cotización.
+   */
+  async calcularYActualizarPresupuesto(
+    uuidProyecto: string,
+  ): Promise<Result<PresupuestoCalculadoDto>> {
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { uuid: uuidProyecto },
+      relations: {
+        cotizaciones: true,
+      },
+    });
+
+    if (!proyecto) {
+      return Result.fallo<PresupuestoCalculadoDto>('Proyecto no encontrado.');
+    }
+
+    const cotizaciones = proyecto.cotizaciones ?? [];
+    const presupuestoTotal = cotizaciones.reduce((acc, cot) => acc + Number(cot.montoTotal || 0), 0);
+
+    proyecto.presupuesto = presupuestoTotal;
+    await this.proyectoRepository.save(proyecto);
+
+    const datos: PresupuestoCalculadoDto = {
+      uuid: proyecto.uuid,
+      nombre: proyecto.nombre,
+      cantidadCotizaciones: cotizaciones.length,
+      presupuesto: presupuestoTotal,
+      cotizaciones: cotizaciones.map((cot) => ({
+        uuid: cot.uuid,
+        nombre: cot.nombre,
+        montoTotal: Number(cot.montoTotal || 0),
+      })),
+    };
+
+    return Result.ok(
+      datos,
+      cotizaciones.length === 0
+        ? 'El proyecto no tiene cotizaciones. El presupuesto quedó en 0.'
+        : 'Presupuesto del proyecto calculado a partir de las cotizaciones.',
+    );
   }
 }

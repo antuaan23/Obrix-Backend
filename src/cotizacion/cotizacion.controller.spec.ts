@@ -8,7 +8,16 @@ describe('CotizacionController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CotizacionController],
-      providers: [CotizacionService],
+      providers: [
+        {
+          provide: CotizacionService,
+          useValue: {
+            crearCotizacion: jest.fn(),
+            obtenerPorProyectoUuid: jest.fn(),
+            generarPdfPorUuid: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<CotizacionController>(CotizacionController);

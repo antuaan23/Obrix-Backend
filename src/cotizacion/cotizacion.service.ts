@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cotizacion } from '../cotizacion/entities/cotizacion.entity';
@@ -7,6 +7,9 @@ import { Material } from '../material/entities/material.entity';
 import { Proyecto } from '../proyecto/entities/proyecto.entity';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 import { Result } from 'src/common/interfaces/result';
+import { PdfService } from 'src/pdf/pdf.service';
+import { COTIZACION_PDF_TEMPLATE } from 'src/pdf/templates/cotizacion-pdf.template';
+import { ProyectoService } from 'src/proyecto/proyecto.service';
 
 @Injectable()
 export class CotizacionService {
@@ -19,16 +22,17 @@ export class CotizacionService {
 
     @InjectRepository(Material)
     private readonly materialRepo: Repository<Material>,
+
+    private readonly pdfService: PdfService,
+    private readonly proyectoService: ProyectoService,
   ) {}
 
   async crearCotizacion(dto: CreateCotizacionDto): Promise<Result<Cotizacion>> {
-    // 1. Validar y obtener el proyecto
     const proyecto = await this.proyectoRepo.findOneBy({ uuid: dto.proyectoUuid });
     if (!proyecto) {
       return Result.fallo<Cotizacion>('El proyecto especificado no existe.');
     }
 
-    // 2. Instanciar cotización
     const cotizacion = new Cotizacion();
     cotizacion.nombre = dto.nombre;
     cotizacion.proyecto = proyecto;
@@ -36,7 +40,6 @@ export class CotizacionService {
 
     let totalCotizacion = 0;
 
-    // 3. Procesar items/materiales
     for (const item of dto.items) {
       const material = await this.materialRepo.findOneBy({ uuid: item.materialUuid });
       if (!material) {
@@ -49,10 +52,8 @@ export class CotizacionService {
       const cantidad = Number(item.cantidad);
       const precioUnitario = Number(item.precioUnitario ?? material.precio_clp);
 
-      const nombre = material.producto;
-
       detalle.cantidad = cantidad;
-      detalle.nombre = nombre;
+      detalle.nombre = material.producto;
       detalle.total = cantidad * precioUnitario;
 
       totalCotizacion += detalle.total;
@@ -61,10 +62,11 @@ export class CotizacionService {
 
     cotizacion.montoTotal = totalCotizacion;
 
-    // 4. Guardar entidad
     const cotizacionGuardada = await this.cotizacionRepo.save(cotizacion);
 
-    // 5. Cargar relación completa para la respuesta
+    // El presupuesto del proyecto es la suma de sus cotizaciones.
+    await this.proyectoService.calcularYActualizarPresupuesto(proyecto.uuid);
+
     const cotizacionCompleta = await this.cotizacionRepo.findOne({
       where: { uuid: cotizacionGuardada.uuid },
       relations: {
@@ -104,5 +106,70 @@ export class CotizacionService {
     }
 
     return Result.ok(cotizaciones, 'Cotizaciones del proyecto encontradas.');
+  }
+
+  /**
+   * Genera el PDF de una sola cotización (identificada por UUID).
+   * Pensado para un botón en el front: GET /api/cotizacion/:uuid/pdf
+   */
+  async generarPdfPorUuid(uuid: string): Promise<{ pdfBuffer: Buffer; nombreArchivo: string }> {
+    const cotizacion = await this.cotizacionRepo.findOne({
+      where: { uuid },
+      relations: {
+        detalles: {
+          material: true,
+        },
+        proyecto: {
+          cliente: true,
+        },
+      },
+    });
+
+    if (!cotizacion) {
+      throw new NotFoundException(`Cotización con UUID ${uuid} no encontrada`);
+    }
+
+    const cliente = cotizacion.proyecto?.cliente;
+    const clienteNombre = cliente
+      ? [cliente.nombre, cliente.ap_paterno, cliente.ap_materno].filter(Boolean).join(' ')
+      : 'Sin cliente asignado';
+
+    const quoteData = {
+      codigo: `COT-${cotizacion.id}`,
+      nombreCotizacion: cotizacion.nombre,
+      proyectoNombre: cotizacion.proyecto?.nombre ?? 'Sin proyecto',
+      clienteNombre,
+      fecha: new Date(cotizacion.creadoEl).toLocaleDateString('es-CL'),
+      items: (cotizacion.detalles ?? []).map((det) => {
+        const cantidad = Number(det.cantidad || 0);
+        const total = Number(det.total || 0);
+        const unitPrice = cantidad > 0 ? total / cantidad : 0;
+
+        return {
+          name: det.nombre || det.material?.producto || 'Material sin nombre',
+          quantity: Number.isInteger(cantidad) ? cantidad : Number(cantidad.toFixed(2)),
+          unitPrice,
+          total,
+        };
+      }),
+      total: Number(cotizacion.montoTotal || 0),
+    };
+
+    const pdfBuffer = await this.pdfService.generatePdf(COTIZACION_PDF_TEMPLATE, quoteData);
+    const slug = this.slugNombreArchivo(cotizacion.nombre);
+
+    return {
+      pdfBuffer,
+      nombreArchivo: `Cotizacion_${slug || quoteData.codigo}.pdf`,
+    };
+  }
+
+  private slugNombreArchivo(nombre: string): string {
+    return nombre
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_|_$/g, '')
+      .slice(0, 40);
   }
 }

@@ -13,5 +13,6 @@ import { Gasto } from 'src/gasto/entities/gasto.entity';
   ],
   controllers: [ProyectoController],
   providers: [ProyectoService],
+  exports: [ProyectoService],
 })
 export class ProyectoModule {}
