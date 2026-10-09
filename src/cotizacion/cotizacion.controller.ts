@@ -17,7 +17,7 @@ import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 import { Cotizacion } from './entities/cotizacion.entity';
 import { Result } from 'src/common/interfaces/result';
 
-@ApiTags('cotizaciones')
+@ApiTags('Cotizaciones')
 @Controller('cotizacion')
 export class CotizacionController {
   constructor(private readonly cotizacionService: CotizacionService) {}

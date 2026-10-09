@@ -4,7 +4,7 @@ import { MaterialService } from './material.service';
 import { Material } from './entities/material.entity';
 import { Result } from 'src/common/interfaces/result';
 
-@ApiTags('materiales')
+@ApiTags('Materiales')
 @Controller('materiales')
 export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
