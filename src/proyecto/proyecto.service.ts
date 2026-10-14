@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +9,8 @@ import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { Gasto } from 'src/gasto/entities/gasto.entity';
+import { MailService } from 'src/mail/mail.service';
+import { Mail } from 'nodemailer';
 
 @Injectable()
 export class ProyectoService {
@@ -21,7 +23,9 @@ export class ProyectoService {
     private readonly usuarioRepository: Repository<Usuario>,
 
     @InjectRepository(Gasto)
-    private readonly gastoRepository: Repository<Gasto>
+    private readonly gastoRepository: Repository<Gasto>,
+
+    private readonly mailService: MailService
   ) {}
 
   async create(dto: CreateProyectoDto): Promise<Result<ProyectoResponseDto>> {

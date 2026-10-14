@@ -8,6 +8,8 @@ import { Usuario } from '../usuario/entities/usuario.entity';
 import { CreateGastoDto } from './dto/create-gasto.dto';
 import { Result } from '../common/interfaces/result';
 import { StorageService, ArchivoSubido } from '../common/services/storage.service';
+import { MailService } from 'src/mail/mail.service';
+import { MailTemplate } from 'src/mail/mail-template.enum';
 
 @Injectable()
 export class GastoService {
@@ -22,6 +24,8 @@ export class GastoService {
     private readonly usuarioRepository: Repository<Usuario>,
 
     private readonly storageService: StorageService, 
+
+    private readonly mailService: MailService, 
   ) {}
 
   async create(
@@ -69,6 +73,19 @@ export class GastoService {
     });
 
     const gastoGuardado = await this.gastoRepository.save(nuevoGasto);
+
+    await this.mailService.enviarCorreo({
+      plantilla: MailTemplate.GASTO_CREADO,
+      to: usuario.email,
+      subject: 'Nuevo Gasto',
+      contexto: {
+        nombreProyecto: proyecto.nombre,
+        monto: dto.monto,
+        nombreUsuario: `${usuario.nombre} ${usuario.ap_paterno}`,
+        nombreGasto: gastoGuardado.nombre,
+        fechaCreacion: new Date(gastoGuardado.creadoEl).toLocaleDateString()
+      }
+    })
 
     return Result.ok<Gasto>(gastoGuardado, 'Gasto registrado exitosamente.');
   }

@@ -1,6 +1,10 @@
 import { IsString, IsEmail, IsNotEmpty, IsEnum, IsObject, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { MailTemplate } from "../mail-template.enum";
+import { TemplateContextMap } from "../interfaces/contexto-mail.interface";
+
+// Creamos la unión de todos los contextos posibles del mapa
+export type MailContextUnion = TemplateContextMap[keyof TemplateContextMap];
 
 export class SendMailDto {
     @ApiProperty({ example: 'ni.antugb@gmail.com' })
@@ -9,7 +13,7 @@ export class SendMailDto {
     to!: string;
 
     @ApiProperty({ example: 'Obrix App <soporte@obrix.com>', required: false })
-    @IsString()
+    @IsString() 
     @IsOptional()
     from?: string;
 
@@ -24,10 +28,10 @@ export class SendMailDto {
     plantilla!: MailTemplate;
 
     @ApiProperty({ 
-        example: { name: 'Juan Pérez', activationUrl: 'https://tuapp.com/activate?token=xyz' }, 
+        example: { nombreUsuario: 'Juan Pérez' }, 
         required: false 
-    })
+    } as any) // Casteo 'as any' recomendado por Swagger para tipos unión complejos
     @IsObject()
     @IsOptional()
-    contexto?: Record<string, any>;
+    contexto?: MailContextUnion;
 }

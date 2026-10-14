@@ -9,6 +9,9 @@ import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 import { Result } from 'src/common/interfaces/result';
 import { PdfService } from 'src/pdf/pdf.service';
 import { ProyectoService } from 'src/proyecto/proyecto.service';
+import { MailService } from 'src/mail/mail.service';
+import { Mail } from 'nodemailer';
+import { MailTemplate } from 'src/mail/mail-template.enum';
 
 @Injectable()
 export class CotizacionService {
@@ -24,10 +27,18 @@ export class CotizacionService {
 
     private readonly pdfService: PdfService,
     private readonly proyectoService: ProyectoService,
+    private readonly mailService: MailService
   ) {}
 
   async crearCotizacion(dto: CreateCotizacionDto): Promise<Result<Cotizacion>> {
-    const proyecto = await this.proyectoRepo.findOneBy({ uuid: dto.proyectoUuid });
+    const proyecto = await this.proyectoRepo.findOne({
+      where: { uuid: dto.proyectoUuid },
+      relations: {
+        usuarios: {
+          rol: true
+        },
+      },
+     });
     if (!proyecto) {
       return Result.fallo<Cotizacion>('El proyecto especificado no existe.');
     }
@@ -62,6 +73,28 @@ export class CotizacionService {
     cotizacion.montoTotal = totalCotizacion;
 
     const cotizacionGuardada = await this.cotizacionRepo.save(cotizacion);
+
+    const liderProyecto = proyecto.usuarios?.find(
+      (u) => u.rol.nombre === 'Lider'
+    );
+    
+    if (!liderProyecto || !liderProyecto.email){
+      return Result.fallo<Cotizacion>('No se encontró un usuario lider asignado a este proyecto')
+    }
+
+    await this.mailService.enviarCorreo({
+      plantilla: MailTemplate.COTIZACION_CREADA,
+      to: liderProyecto.email,
+      subject: 'Notificación de Cotización - Obrix',
+      contexto: {
+        usuarioLider: liderProyecto.nombre,
+        nombreProyecto: proyecto.nombre,
+        folioCotizacion: cotizacionGuardada.folio,
+        nombreCotizacion: cotizacionGuardada.nombre,
+        fechaCreacion: cotizacionGuardada.creadoEl,
+        montoCotizacion: cotizacionGuardada.montoTotal
+      }
+    })
 
     // El presupuesto del proyecto es la suma de sus cotizaciones.
     await this.proyectoService.calcularYActualizarPresupuesto(proyecto.uuid);

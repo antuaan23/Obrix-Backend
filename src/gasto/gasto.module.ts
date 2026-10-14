@@ -6,10 +6,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { StorageService } from 'src/common/services/storage.service';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Gasto, Usuario, Proyecto]), 
+    MailModule
   ],
   controllers: [GastoController],
   providers: [GastoService, StorageService],

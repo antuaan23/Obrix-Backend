@@ -11,6 +11,7 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { GastoService } from './gasto.service';
@@ -28,7 +29,12 @@ export class GastoController {
   @Post()
   @ApiOperation({ summary: 'Registrar un nuevo gasto con comprobante' })
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('imagen'))
+  @UseInterceptors(
+    FileInterceptor('imagen', {
+      storage: memoryStorage(),
+      limits: { fileSize: 8 * 1024 * 1024 },
+    }),
+  )
   async create(
     @Body() dto: CreateGastoDto,
     @GetUser('uuid') usuarioUuid: string,
