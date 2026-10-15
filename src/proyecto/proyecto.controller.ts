@@ -157,7 +157,7 @@ export class ProyectoController {
   @Post(':uuid/usuarios')
   async agregarUsuario(
     @Param('uuid') uuidProyecto: string,
-    @Body() dto: AgregarUsuarioProyectoDto, // <-- Usamos el DTO aquí
+    @Body() dto: AgregarUsuarioProyectoDto, 
   ) {
     return this.proyectoService.agregarUsuarioAProyecto(uuidProyecto, dto.uuidUsuario);
   }

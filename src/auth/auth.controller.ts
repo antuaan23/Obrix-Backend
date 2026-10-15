@@ -74,11 +74,30 @@ export class AuthController {
       respuesta: res.resultado,
     };
   }
+
   @Post('solicitar-recuperacion')
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
+  @ApiResponse({
+    status: 200,
+    description: 'Solicitud de recuperación enviada exitosa' 
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error interno del servidor'
+  })
   async solicitarRecuperacion(@Body() dto: ResetPasswordDto) {
     return this.authService.solicitarRecuperacion(dto.email);
   }
 
+  @ApiOperation({ summary: 'Cambiar contraseña' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña cambiada exitosamente.' 
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error interno del servidor'
+  })
   @Post('restablecer-password')
   async restablecerPassword(@Body() dto: VerificarYCambiarPasswordDto) {
     return this.authService.cambiarPasswordConCodigo(dto);
