@@ -64,7 +64,7 @@ export class RegisterDto {
         example: '2'
     })
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     rolId!: number;
 
 }
