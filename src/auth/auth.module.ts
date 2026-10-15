@@ -9,6 +9,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { Rol } from 'src/rol/entities/rol.entity';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { Rol } from 'src/rol/entities/rol.entity';
       secret: process.env.JWT_SECRET || 'secreto_super_seguro',
       signOptions: { expiresIn: '8h' },
     }),
+    MailModule
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard],

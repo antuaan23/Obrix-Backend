@@ -52,11 +52,16 @@ export class Usuario {
     @ManyToMany(() => Proyecto, (proyecto) => proyecto.usuarios)
     proyectos!: Proyecto[];
 
-    @ManyToOne(() => Equipo, (equipo) => equipo.usuarios, { nullable: true })
-    @JoinColumn({ name: 'equipo_id' })
-    equipo!: Equipo;
+    @ManyToMany(() => Equipo, (equipo) => equipo.usuarios, { nullable: true })
+    equipos!: Equipo[];
 
     @ManyToOne(() => Rol, (rol) => rol.usuarios, { eager: true, nullable: false })
     @JoinColumn({ name: 'rol_id' }) 
     rol!: Rol;
+
+    @Column({ nullable: true })
+    codigoRecuperacion?: string;
+
+    @Column({ type: 'timestamp', nullable: true})
+    codigoExpiracion?: Date
 }

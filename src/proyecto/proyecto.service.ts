@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Res } from '@nestjs/common';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -241,5 +241,46 @@ export class ProyectoService {
         ? 'El proyecto no tiene cotizaciones. El presupuesto quedó en 0.'
         : 'Presupuesto del proyecto calculado a partir de las cotizaciones.',
     );
+  }
+
+  async agregarUsuarioAProyecto(uuidProyecto: string, uuidUsuario: string): Promise<Result<Proyecto>> {
+    // 1. Buscar el proyecto por UUID para obtener su ID numérico
+    const proyecto = await this.proyectoRepository.findOne({ where: { uuid: uuidProyecto } });
+    if (!proyecto) {
+      return Result.fallo<Proyecto>(`Proyecto con UUID ${uuidProyecto} no encontrado.`);
+    }
+  
+    // 2. Buscar al usuario por UUID para obtener su ID numérico
+    const usuario = await this.usuarioRepository.findOne({ where: { uuid: uuidUsuario } });
+    if (!usuario) {
+      return Result.fallo<Proyecto>(`Usuario con UUID ${uuidUsuario} no encontrado.`);
+    }
+  
+    // 3. Verificar si ya existe la relación en la tabla intermedia para evitar duplicados
+    const existeRelacion = await this.proyectoRepository
+      .createQueryBuilder()
+      .relation(Proyecto, 'usuarios')
+      .of(proyecto.id)
+      .loadMany();
+  
+    const yaEstaAsociado = existeRelacion.some((u) => u.id === usuario.id);
+    if (yaEstaAsociado) {
+      return Result.fallo<Proyecto>('El usuario ya está asociado al proyecto.');
+    }
+  
+    // 4. Agregar la relación directamente a la tabla intermedia de forma segura
+    await this.proyectoRepository
+      .createQueryBuilder()
+      .relation(Proyecto, 'usuarios')
+      .of(proyecto.id)
+      .add(usuario.id);
+  
+    // 5. Retornar el proyecto actualizado con todos sus usuarios
+    const proyectoActualizado = await this.proyectoRepository.findOne({
+      where: { uuid: uuidProyecto },
+      relations: { usuarios: true, cliente: true },
+    });
+  
+    return Result.ok(proyectoActualizado!, 'Usuario agregado al proyecto correctamente');
   }
 }

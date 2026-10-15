@@ -8,10 +8,10 @@ export class EquipoController {
   constructor(private readonly equipoService: EquipoService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Obtener la lista completa de usuarios' })
+  @ApiOperation({ summary: 'Crear un nuevo equipo' })
   @ApiResponse({
     status: 200,
-    description: 'Lista de usuarios recuperada exitosamente.',
+    description: 'Equipo creado exitosamente',
     type: CreateEquipoDto,
   })
   @HttpCode(HttpStatus.CREATED)
@@ -69,5 +69,13 @@ export class EquipoController {
       descripcion: resultado.descripcion,
       respuesta: resultado._resultado,
     };
+  }
+
+  @Post(':uuid/usuarios')
+  async agregarUsuario(
+    @Param('uuid') uuidEquipo: string,
+    @Body() body: { uuidUsuario: string }
+  ) {
+    return this.equipoService.agregarUsuario(uuidEquipo, body.uuidUsuario);
   }
 }

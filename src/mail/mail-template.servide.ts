@@ -10,6 +10,7 @@ export class MailTemplateService{
     render(plantilla: MailTemplate.PRESUPUESTO_CREADO, contexto: TemplateContextMap[MailTemplate.PRESUPUESTO_CREADO]): string;
     render(plantilla: MailTemplate.GASTO_CREADO, contexto: TemplateContextMap[MailTemplate.GASTO_CREADO]): string;
     render(plantilla: MailTemplate.COTIZACION_CREADA, contexto: TemplateContextMap[MailTemplate.COTIZACION_CREADA]): string;
+    render(plantilla: MailTemplate.RESESTABLECER_PASS, contexto: TemplateContextMap[MailTemplate.RESESTABLECER_PASS]): string;
     render(plantilla: MailTemplate, contexto: any): string;
 
     // 2. IMPLEMENTACIÓN REAL (Única y centralizada)
@@ -251,6 +252,105 @@ export class MailTemplateService{
                                                 🛡️ <strong>Aviso de seguridad</strong>
                                                 <br>
                                                 Obrix nunca solicitará contraseñas, datos bancarios ni información personal por correo electrónico. Si recibes un mensaje sospechoso, repórtalo al administrador.
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </td>
+                            </tr>
+
+                            <!-- Pie de página -->
+                            <tr>
+                                <td style="background-color: #0f172a; padding: 30px 20px; text-align: center; color: #94a3b8; font-size: 13px; line-height: 1.6;">
+                                    <div style="font-weight: bold; color: #ffffff; font-size: 15px; margin-bottom: 4px;">Obrix</div>
+                                    Sistema de gestión de obras y proyectos.
+                                    <br><br>
+                                    Este es un correo generado automáticamente. Por favor, no respondas a este mensaje.
+                                    <br><br>
+                                    <span style="font-size: 12px; color: #64748b;">© 2026 Obrix · Todos los derechos reservados</span>
+                                </td>
+                            </tr>
+
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>`;
+      }
+
+      case MailTemplate.RESESTABLECER_PASS: {
+        const ctx = contexto as TemplateContextMap[MailTemplate.RESESTABLECER_PASS];
+        return `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Obrix - Recuperación de Contraseña</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 40px 0;">
+                <tr>
+                    <td align="center">
+                        <!-- Contenedor principal -->
+                        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                            
+                            <!-- Cabecera -->
+                            <tr>
+                                <td style="background-color: #2563eb; padding: 40px 20px; text-align: center; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 0.5px;">
+                                    Obrix
+                                </td>
+                            </tr>
+
+                            <!-- Cuerpo del mensaje -->
+                            <tr>
+                                <td style="padding: 40px;">
+                                    
+                                    <!-- Badge -->
+                                    <div style="text-align: center; margin-bottom: 25px;">
+                                        <span style="background-color: #eff6ff; color: #1d4ed8; padding: 8px 18px; border-radius: 999px; font-weight: bold; font-size: 14px; display: inline-block; border: 1px solid #bfdbfe;">
+                                            🔐 RECUPERACIÓN DE CONTRASEÑA
+                                        </span>
+                                    </div>
+
+                                    <!-- Saludo y título -->
+                                    <div style="text-align: center; margin-bottom: 10px;">
+                                        <p style="margin: 0 0 10px 0; color: #52525b; font-size: 16px;">
+                                            Hola, <span style="font-weight: bold; color: #18181b;">${ctx.nombre}</span> 👤
+                                        </p>
+                                        <h1 style="margin: 0 0 20px 0; color: #1e293b; font-size: 22px; font-weight: bold; line-height: 1.4;">
+                                            Solicitud para restablecer tu clave
+                                        </h1>
+                                        <p style="margin: 0 0 30px 0; color: #52525b; font-size: 15px; line-height: 1.5;">
+                                            Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Obrix. Utiliza el siguiente código de verificación de 6 dígitos:
+                                        </p>
+                                    </div>
+
+                                    <!-- Tarjeta de Código OTP -->
+                                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                                        <tr>
+                                            <td style="padding: 24px;">
+                                                <div style="font-size: 12px; text-transform: uppercase; color: #64748b; font-weight: bold; letter-spacing: 1px;">
+                                                    CÓDIGO DE VERIFICACIÓN
+                                                </div>
+                                                <div style="margin-top: 10px; font-size: 32px; font-weight: bold; color: #2563eb; letter-spacing: 4px;">
+                                                    ${ctx.codigo}
+                                                </div>
+                                                <div style="margin-top: 10px; font-size: 13px; color: #64748b;">
+                                                    Este código expira en 15 minutos.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <!-- Aviso de Seguridad -->
+                                    <table width="100%" style="margin-top: 35px; background-color: #fff7ed; border-radius: 8px; border: 1px solid #fed7aa;">
+                                        <tr>
+                                            <td style="padding: 20px; font-size: 14px; color: #9a3412; line-height: 1.7;">
+                                                🛡️ <strong>Aviso de seguridad</strong>
+                                                <br>
+                                                Si tú no solicitaste este cambio, puedes ignorar este mensaje de forma segura. Tu contraseña actual no se modificará.
                                             </td>
                                         </tr>
                                     </table>

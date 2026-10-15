@@ -4,6 +4,11 @@ export interface BienvenidaContexto{
     nombreUsuario: string;
 }
 
+export interface ResetearPassContexto{
+  nombre: string;
+  codigo: string;
+}
+
 export interface CotizacionEnviadaContexto{
     nombreUsuario: string;
     nombreProyecto: string;
@@ -45,8 +50,9 @@ export type TemplateContextMap = {
     monto: string 
 };
   [MailTemplate.GASTO_CREADO]: { 
-    nombreUsuario: string; nombreProyecto: 
-    string; monto: number; 
+    nombreUsuario: string; 
+    nombreProyecto: string; 
+    monto: number; 
     nombreGasto: string; 
     fechaCreacion: string;  
 };
@@ -57,5 +63,9 @@ export type TemplateContextMap = {
     nombreCotizacion: string; 
     montoCotizacion: number; 
     fechaCreacion: Date; 
+};
+  [MailTemplate.RESESTABLECER_PASS]: { 
+    nombre: string;
+    codigo: string;
 };
 }

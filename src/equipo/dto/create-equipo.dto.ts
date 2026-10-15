@@ -1,8 +1,12 @@
-import { IsString, IsNotEmpty, IsUUID, MaxLength, IsArray, ArrayMinSize } from 'class-validator';
+import { IsString, IsNotEmpty, IsUUID, MaxLength, IsArray, ArrayMinSize, IsOptional } from 'class-validator';
 
 export class CreateEquipoDto {
-  @IsNotEmpty({ message: 'El nombre del equipo es obligatorio' })
+  @IsUUID()
+  @IsNotEmpty()
+  uuidProyecto!: string;
+
   @IsString()
+  @IsOptional()
   @MaxLength(25, { message: 'El nombre no puede superar los 25 caracteres' })
   nombre!: string;
 
@@ -13,5 +17,6 @@ export class CreateEquipoDto {
   @IsArray({ message: 'Los trabajadores deben ser una lista' })
   @ArrayMinSize(1, { message: 'El equipo debe tener al menos un trabajador' })
   @IsUUID('4', { each: true, message: 'Cada trabajador debe tener un UUID válido' })
+  @IsOptional()
   uuidTrabajadores!: string[];
 }

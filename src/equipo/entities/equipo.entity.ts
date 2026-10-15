@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany, UpdateDateColumn, ManyToMany, OneToOne} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany, UpdateDateColumn, ManyToMany, JoinTable} from 'typeorm';
 import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 
@@ -28,6 +28,11 @@ export class Equipo {
     @OneToMany(() => Proyecto, (proyecto) => proyecto.equipo)
     proyectos!: Proyecto[];
 
-    @OneToMany(() => Usuario, (usuario) => usuario.equipo)
+    @ManyToMany(() => Usuario, (usuario) => usuario.equipos)
+    @JoinTable({
+        name: 'equipos_usuarios',
+        joinColumn: { name: 'equipo_id', referencedColumnName: 'id'},
+        inverseJoinColumn: { name: 'usuario_id', referencedColumnName: 'id'}
+    })
     usuarios!: Usuario[];
 }

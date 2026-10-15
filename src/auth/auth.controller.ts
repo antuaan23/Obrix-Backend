@@ -12,6 +12,8 @@ import { AuthService } from './auth.service';
 import { CreateUsuarioDto } from '../usuario/dto/create-usuario.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { VerificarYCambiarPasswordDto } from './dto/verificar-y-cambiar.dto';
+import { ResetPasswordDto } from './dto/resetear-pass.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -71,5 +73,14 @@ export class AuthController {
       descripcion: res.descripcion,
       respuesta: res.resultado,
     };
+  }
+  @Post('solicitar-recuperacion')
+  async solicitarRecuperacion(@Body() dto: ResetPasswordDto) {
+    return this.authService.solicitarRecuperacion(dto.email);
+  }
+
+  @Post('restablecer-password')
+  async restablecerPassword(@Body() dto: VerificarYCambiarPasswordDto) {
+    return this.authService.cambiarPasswordConCodigo(dto);
   }
 }

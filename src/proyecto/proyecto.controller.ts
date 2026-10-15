@@ -5,11 +5,12 @@ import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
+import { AgregarUsuarioProyectoDto } from './dto/agregar-usuario-proyecto.dto';
 
 @ApiTags('Proyectos')
 @Controller('proyectos')
 export class ProyectoController {
-  constructor(private readonly proyectosService: ProyectoService) {}
+  constructor(private readonly proyectoService: ProyectoService) {}
 
   @Get()
   @ApiOperation({ summary: 'Obtener la lista completa de proyectos' })
@@ -19,7 +20,7 @@ export class ProyectoController {
     type: [ProyectoResponseDto],
   })
   async findAll() {
-    const res = await this.proyectosService.findAll();
+    const res = await this.proyectoService.findAll();
 
     if (!res.exitoso) {
       throw new InternalServerErrorException({
@@ -43,7 +44,7 @@ export class ProyectoController {
     type: [ProyectoResponseDto],
   })
   async findOne(@Param('uuid') uuid: string) {
-    const res = await this.proyectosService.findByUsuarioUuid(uuid);
+    const res = await this.proyectoService.findByUsuarioUuid(uuid);
 
     if (!res.exitoso) {
       throw new InternalServerErrorException({
@@ -67,7 +68,7 @@ export class ProyectoController {
     type: ProyectoResponseDto,
   })
   async findOneByUuid(@Param('uuid') uuid: string) {
-    const res = await this.proyectosService.findOneByUuid(uuid);
+    const res = await this.proyectoService.findOneByUuid(uuid);
 
     if (!res.exitoso) {
       throw new InternalServerErrorException({
@@ -87,7 +88,7 @@ export class ProyectoController {
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo proyecto (solo con nombre o con datos opcionales)' })
   async crear(@Body() dto: CreateProyectoDto) {
-    const res = await this.proyectosService.create(dto);
+    const res = await this.proyectoService.create(dto);
     if (!res.exitoso) {
       throw new InternalServerErrorException({ exitoso: false, descripcion: res.descripcion });
     }
@@ -97,7 +98,7 @@ export class ProyectoController {
   @Patch(':uuid')
   @ApiOperation({ summary: 'Asignar cliente o actualizar datos del proyecto' })
   async update(@Param('uuid') uuid: string, @Body() dto: UpdateProyectoDto) {
-    const res = await this.proyectosService.update(uuid, dto);
+    const res = await this.proyectoService.update(uuid, dto);
     if (!res.exitoso) {
       throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
     }
@@ -107,7 +108,7 @@ export class ProyectoController {
   @Get(':uuid/presupuesto')
   @ApiOperation({ summary: 'Obtener el estado del presupuesto y total de gastos de un proyecto por UUID' })
   async obtenerPresupuesto(@Param('uuid') uuid: string) {
-    const res = await this.proyectosService.obtenerPresupuestoConGastosPorUuid(uuid);
+    const res = await this.proyectoService.obtenerPresupuestoConGastosPorUuid(uuid);
 
     if (!res.exitoso) {
       throw new NotFoundException({
@@ -137,7 +138,7 @@ export class ProyectoController {
   @ApiResponse({ status: 200, type: PresupuestoCalculadoDto })
   @ApiResponse({ status: 404, description: 'El proyecto no existe.' })
   async calcularPresupuesto(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
-    const res = await this.proyectosService.calcularYActualizarPresupuesto(uuid);
+    const res = await this.proyectoService.calcularYActualizarPresupuesto(uuid);
 
     if (!res.exitoso) {
       throw new NotFoundException({
@@ -151,5 +152,13 @@ export class ProyectoController {
       descripcion: res.descripcion,
       respuesta: res.resultado,
     };
+  }
+
+  @Post(':uuid/usuarios')
+  async agregarUsuario(
+    @Param('uuid') uuidProyecto: string,
+    @Body() dto: AgregarUsuarioProyectoDto, // <-- Usamos el DTO aquí
+  ) {
+    return this.proyectoService.agregarUsuarioAProyecto(uuidProyecto, dto.uuidUsuario);
   }
 }
