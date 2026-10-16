@@ -51,7 +51,7 @@ export class UsuarioController {
   @ApiResponse({ status: 201, description: 'Trabajador registrado exitosamente.' })
   @ApiResponse({ status: 400, description: 'Datos inválidos o correo/RUT ya existen.' })
   async crearTrabajador(@Req() req: any, @Body() registerDto: RegisterDto) {
-    const liderId = req.user.sub;
+    const liderId = req.user.userId;
 
     const resultado = await this.usuarioService.crearTrabajador(liderId, registerDto);
 
@@ -79,7 +79,10 @@ export class UsuarioController {
   @ApiOperation({ summary: 'Obtener la lista de trabajadores asociados al líder autenticado' })
   @ApiResponse({ status: 200, description: 'Lista de trabajadores obtenida exitosamente.' })
   async obtenerMisTrabajadores(@Req() req: any) {
-    const liderId = req.user.sub;
+    console.log('--- DEBUG LIDER ID ---');
+    console.log('req.user completo:', req.user);
+
+    const liderId = req.user.userId;
 
     const resultado = await this.usuarioService.obtenerTrabajadoresPorLider(liderId);
 
