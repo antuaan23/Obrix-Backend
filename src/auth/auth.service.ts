@@ -8,14 +8,16 @@ import { LoginDto } from './dto/login.dto';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { Result } from 'src/common/interfaces/result';
 import { Rol } from 'src/rol/entities/rol.entity';
-import { AuthPayload, PasswordChangedPayload, ResetPayload } from './interfaces/auth.interface';
+import { AuthPayload, PasswordChangedPayload } from './interfaces/auth.interface';
 import { MailService } from 'src/mail/mail.service';
 import { Subject } from 'rxjs';
 import { plainToClass } from 'class-transformer';
 import { getMaxListeners } from 'events';
 import { MailTemplate } from 'src/mail/mail-template.enum';
 import { content } from 'pdfkit/js/page';
-import { VerificarYCambiarPasswordDto } from './dto/verificar-y-cambiar.dto';
+import { VerificarCodigoDto } from './dto/verificar-codigo.dto';
+import { ResetPasswordDto } from './dto/resetear-pass.dto';
+import { CambiarPassDto } from './dto/cambiar-pass.dto';
 
 @Injectable()
 export class AuthService {
@@ -107,14 +109,15 @@ export class AuthService {
     );
   }
 
-  async solicitarRecuperacion(email: string): Promise<Result<ResetPayload>>{
+  async solicitarRecuperacion(dto: ResetPasswordDto): Promise<Result<ResetPasswordDto>>{
+    const { email } = dto;
     const usuario = await this.usuarioRepository.findOne({
-      where: {email}
-    })
-    if(!usuario){
-      return Result.fallo<ResetPayload>(`Si el correo está registrado, se ha enviado un código.`)
-    }
+      where: { email }
+    });
 
+    if(!usuario){
+      return Result.fallo<ResetPasswordDto>(`¡Mm, hay algo sospechoso... Si el correo realmente está registrado, se enviará el código de recuperación. `)
+    }
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
 
     const expiracion = new Date();
@@ -135,38 +138,64 @@ export class AuthService {
     })
 
     if(!resultadoCorreo){
-      return Result.fallo<ResetPayload>(`No se pudo enviar el correo de recuperación.`)
+      return Result.fallo<ResetPasswordDto>(`No se pudo enviar el correo de recuperación.`)
     }
 
-    return Result.ok<ResetPayload>({email: usuario.email}, 'Codigo de recuperación enviado exitosamente.')
+    return Result.ok<ResetPasswordDto>({email: usuario.email}, 'Codigo de recuperación enviado exitosamente.')
   }
 
-  async cambiarPasswordConCodigo(dto: VerificarYCambiarPasswordDto): Promise<Result<PasswordChangedPayload>> {
-    const { email, codigo, nuevaPassword } = dto;
+  async verificarCodigo(dto: VerificarCodigoDto): Promise<Result<{ email: string }>>{
+    const { email, codigo } = dto;
+
+    if(!email){
+      return Result.fallo('El correo electrónico es obligatorio para la verificación.');
+    }
+
+    const usuario = await this.usuarioRepository.findOne({where: { email }});
+
+    if(!usuario || !usuario.codigoRecuperacion || !usuario.codigoExpiracion){
+      return Result.fallo('Solicitud invalida o el usuario no tiene un código activo.');
+    }
+
+    if (usuario.codigoRecuperacion !== codigo){
+      return Result.fallo('El codigo de verificación es incorrecto.');
+    }
+
+    if(new Date() > new Date(usuario.codigoExpiracion!)){
+      return Result.fallo('El código de verificación ha expirado.')
+    }
+
+    return Result.ok(
+      { email: usuario.email },
+      'Código verificado correctamente'
+    )
+  }
+
+  async cambiarPasswordConCodigo(dto: CambiarPassDto): Promise<Result<PasswordChangedPayload>> {
+    const { email, codigo, nuevaPassword, confirmaNuevaPassword } = dto;
+
+    if (nuevaPassword !== confirmaNuevaPassword) {
+      return Result.fallo<PasswordChangedPayload>('Las contraseñas no coinciden.');
+    }
 
     const usuario = await this.usuarioRepository.findOne({ where: { email } });
-    if (!usuario || !usuario.codigoRecuperacion || !usuario.codigoExpiracion) {
-      return Result.fallo<PasswordChangedPayload>('Solicitud inválida o expirada.');
+    
+    // VALIDACIÓN DE SEGURIDAD: Si no tiene código activo o el código no coincide, se rechaza
+    if (!usuario || !usuario.codigoRecuperacion || usuario.codigoRecuperacion !== codigo) {
+      return Result.fallo<PasswordChangedPayload>('Petición no autorizada. El código de recuperación es inválido o no ha sido verificado.');
     }
 
-    if (usuario.codigoRecuperacion !== codigo) {
-      return Result.fallo<PasswordChangedPayload>('El código de verificación es incorrecto.');
+    if (usuario.codigoExpiracion && new Date() > new Date(usuario.codigoExpiracion)) {
+      return Result.fallo<PasswordChangedPayload>('El código de recuperación ha expirado.');
     }
 
-    if (new Date() > new Date(usuario.codigoExpiracion)) {
-      return Result.fallo<PasswordChangedPayload>('El código de verificación ha expirado.');
-    }
-
-    // Hashear la nueva contraseña
     const hashedPassword = await bcrypt.hash(nuevaPassword, 10);
 
-    // Actualizar clave y limpiar los campos temporales
     usuario.password = hashedPassword;
-    usuario.codigoRecuperacion = undefined;
-    usuario.codigoExpiracion = undefined;
+    usuario.codigoRecuperacion = undefined as any;
+    usuario.codigoExpiracion = undefined as any;
     await this.usuarioRepository.save(usuario);
 
-    // Retornar un payload tipado en lugar de null
     return Result.ok<PasswordChangedPayload>(
       { email: usuario.email },
       'Contraseña actualizada exitosamente.'
