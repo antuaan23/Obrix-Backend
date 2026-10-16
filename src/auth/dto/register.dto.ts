@@ -59,12 +59,4 @@ export class RegisterDto {
     @IsNotEmpty()
     telefono!: string;
 
-    @ApiProperty({
-        description: 'Rol del usuario',
-        example: '2'
-    })
-    @IsNumber()
-    @IsOptional()
-    rolId!: number;
-
 }
