@@ -147,22 +147,16 @@ export class AuthService {
   async verificarCodigo(dto: VerificarCodigoDto): Promise<Result<{ email?: string }>>{
     const { email, codigo } = dto;
 
-    // CORREGIDO: Quitado el '?' extra
-    if(!email){
-      return Result.fallo('El correo electrónico es obligatorio para la verificación.');
+    // Buscamos directamente por el código si no viene el email
+    const usuario = await this.usuarioRepository.findOne({
+      where: email ? { email, codigoRecuperacion: codigo } : { codigoRecuperacion: codigo }
+    });
+
+    if (!usuario || !usuario.codigoRecuperacion || !usuario.codigoExpiracion) {
+      return Result.fallo('Solicitud inválida o el código no pertenece a ninguna cuenta activa.');
     }
 
-    const usuario = await this.usuarioRepository.findOne({where: { email }});
-
-    if(!usuario || !usuario.codigoRecuperacion || !usuario.codigoExpiracion){
-      return Result.fallo('Solicitud invalida o el usuario no tiene un código activo.');
-    }
-
-    if (usuario.codigoRecuperacion !== codigo){
-      return Result.fallo('El codigo de verificación es incorrecto.');
-    }
-
-    if(new Date() > new Date(usuario.codigoExpiracion!)){
+    if (new Date() > new Date(usuario.codigoExpiracion)) {
       return Result.fallo('El código de verificación ha expirado.');
     }
 
@@ -170,7 +164,7 @@ export class AuthService {
       { email: usuario.email },
       'Código verificado correctamente'
     );
-  }
+}
 
   async cambiarPasswordConCodigo(dto: CambiarPassDto): Promise<Result<PasswordChangedPayload>> {
     const { email, codigo, nuevaPassword, confirmaNuevaPassword } = dto;
