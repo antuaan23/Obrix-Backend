@@ -55,9 +55,6 @@ export class UsuarioService {
     return Result.ok<UsuarioDto>(usuarioDto, `usuario ${usuario.uuid} encontrado correctamente`);
   }
 
-  // ==========================================
-  // CREAR TRABAJADOR POR EL LÍDER
-  // ==========================================
   async crearTrabajador(liderId: number, registerDto: RegisterDto): Promise<Result<Omit<Usuario, 'password'>>> {
     const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } = registerDto;
 
@@ -93,9 +90,6 @@ export class UsuarioService {
     return Result.ok(usuarioSinPassword, 'Trabajador registrado exitosamente.');
   }
 
-  // ==========================================
-  // OBTENER SOLO LOS TRABAJADORES DE ESTE LÍDER
-  // ==========================================
   async obtenerTrabajadoresPorLider(liderId: number): Promise<Result<Usuario[]>> {
     const trabajadores = await this.usuarioRepository.find({
       where: { liderId },

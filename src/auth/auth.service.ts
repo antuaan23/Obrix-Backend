@@ -144,9 +144,10 @@ export class AuthService {
     return Result.ok<ResetPasswordDto>({email: usuario.email}, 'Codigo de recuperación enviado exitosamente.')
   }
 
-  async verificarCodigo(dto: VerificarCodigoDto): Promise<Result<{ email: string }>>{
+  async verificarCodigo(dto: VerificarCodigoDto): Promise<Result<{ email?: string }>>{
     const { email, codigo } = dto;
 
+    // CORREGIDO: Quitado el '?' extra
     if(!email){
       return Result.fallo('El correo electrónico es obligatorio para la verificación.');
     }
@@ -162,13 +163,13 @@ export class AuthService {
     }
 
     if(new Date() > new Date(usuario.codigoExpiracion!)){
-      return Result.fallo('El código de verificación ha expirado.')
+      return Result.fallo('El código de verificación ha expirado.');
     }
 
     return Result.ok(
       { email: usuario.email },
       'Código verificado correctamente'
-    )
+    );
   }
 
   async cambiarPasswordConCodigo(dto: CambiarPassDto): Promise<Result<PasswordChangedPayload>> {
