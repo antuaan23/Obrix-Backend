@@ -96,8 +96,8 @@ export class CotizacionService {
       }
     })
 
-    // El presupuesto del proyecto es la suma de sus cotizaciones.
-    await this.proyectoService.calcularYActualizarPresupuesto(proyecto.uuid);
+    // Ya NO se recalcula el presupuesto automáticamente al crear una cotización;
+    // se hace de forma explícita mediante el botón del frontend.
 
     const cotizacionCompleta = await this.cotizacionRepo.findOne({
       where: { uuid: cotizacionGuardada.uuid },
@@ -203,5 +203,12 @@ export class CotizacionService {
       .replace(/[^a-zA-Z0-9]+/g, '_')
       .replace(/^_|_$/g, '')
       .slice(0, 40);
+  }
+
+  /**
+   * Suma todas las cotizaciones de un proyecto y actualiza su presupuesto
+   */
+  async calcularPresupuestoProyecto(proyectoUuid: string) {
+    return await this.proyectoService.calcularYActualizarPresupuesto(proyectoUuid);
   }
 }

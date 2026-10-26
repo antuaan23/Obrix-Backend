@@ -22,7 +22,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 
 @ApiTags('Usuarios')
-@Controller('usuarios')
+@Controller(['usuario', 'usuarios'])
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
 
@@ -52,6 +52,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 
@@ -82,6 +83,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 
@@ -108,6 +110,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 
@@ -130,6 +133,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 
@@ -164,6 +168,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 
@@ -188,6 +193,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 
@@ -214,6 +220,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 
@@ -233,6 +240,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 
@@ -252,6 +260,7 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
+      _resultado: resultado.resultado,
     };
   }
 }

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   Param,
   ParseUUIDPipe,
@@ -18,7 +19,7 @@ import { CotizacionService } from './cotizacion.service';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 
 @ApiTags('Cotizaciones')
-@Controller('cotizaciones')
+@Controller(['cotizacion', 'cotizaciones'])
 export class CotizacionController {
   constructor(private readonly cotizacionService: CotizacionService) {}
 
@@ -27,7 +28,7 @@ export class CotizacionController {
   @ApiOperation({
     summary: 'Crear una nueva cotización para un proyecto',
     description:
-      'Al crear la cotización se recalcula automáticamente el presupuesto del proyecto (suma de todas sus cotizaciones).',
+      'Registra la cotización en el proyecto sin sobreescribir ni fijar el presupuesto automáticamente.',
   })
   @ApiResponse({ status: 201, description: 'Cotización creada exitosamente.' })
   @ApiResponse({
@@ -48,6 +49,7 @@ export class CotizacionController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
+      _resultado: res.resultado,
     };
   }
 
@@ -78,11 +80,45 @@ export class CotizacionController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
+      _resultado: res.resultado,
     };
   }
 
   /**
-   * Front: botón "Exportar PDF" → GET /api/cotizaciones/{uuid}/pdf
+   * Front: botón "Calcular Presupuesto" → POST o PATCH /api/cotizacion/proyecto/{proyectoUuid}/calcular-presupuesto
+   * Suma todas las cotizaciones del proyecto y actualiza el campo presupuesto.
+   */
+  @Post('proyecto/:proyectoUuid/calcular-presupuesto')
+  @Patch('proyecto/:proyectoUuid/calcular-presupuesto')
+  @Post('proyecto/:proyectoUuid/presupuesto')
+  @Patch('proyecto/:proyectoUuid/presupuesto')
+  @ApiOperation({
+    summary: 'Calcular el presupuesto del proyecto sumando todas sus cotizaciones',
+    description:
+      'Suma el montoTotal de cada cotización del proyecto y actualiza el presupuesto del proyecto.',
+  })
+  async calcularPresupuesto(
+    @Param('proyectoUuid', new ParseUUIDPipe()) proyectoUuid: string,
+  ) {
+    const res = await this.cotizacionService.calcularPresupuestoProyecto(proyectoUuid);
+
+    if (!res.exitoso) {
+      throw new NotFoundException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+      _resultado: res.resultado,
+    };
+  }
+
+  /**
+   * Front: botón "Exportar PDF" → GET /api/cotizacion/{uuid}/pdf
    * Respuesta: application/pdf (descarga).
    */
   @Get(':uuid/pdf')

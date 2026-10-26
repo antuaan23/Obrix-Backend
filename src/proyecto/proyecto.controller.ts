@@ -20,7 +20,7 @@ import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { AgregarUsuarioProyectoDto } from './dto/agregar-usuario-proyecto.dto';
 
 @ApiTags('Proyectos')
-@Controller('proyectos')
+@Controller(['proyecto', 'proyectos'])
 export class ProyectoController {
   constructor(private readonly proyectoService: ProyectoService) {}
 
@@ -45,6 +45,7 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
+      _resultado: res.resultado,
     };
   }
 
@@ -69,6 +70,7 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
+      _resultado: res.resultado,
     };
   }
 
@@ -93,6 +95,7 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
+      _resultado: res.resultado,
     };
   }
 
@@ -103,7 +106,12 @@ export class ProyectoController {
     if (!res.exitoso) {
       throw new BadRequestException({ exitoso: false, descripcion: res.descripcion });
     }
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+      _resultado: res.resultado,
+    };
   }
 
   @Patch(':uuid')
@@ -113,7 +121,12 @@ export class ProyectoController {
     if (!res.exitoso) {
       throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
     }
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+      _resultado: res.resultado,
+    };
   }
 
   /**
@@ -128,7 +141,12 @@ export class ProyectoController {
     if (!res.exitoso) {
       throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
     }
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+      _resultado: res.resultado,
+    };
   }
 
   /**
@@ -145,7 +163,12 @@ export class ProyectoController {
     if (!res.exitoso) {
       throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
     }
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+      _resultado: res.resultado,
+    };
   }
 
   @Patch(':uuid/activar')
@@ -155,7 +178,12 @@ export class ProyectoController {
     if (!res.exitoso) {
       throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
     }
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+      _resultado: res.resultado,
+    };
   }
 
   @Patch(':uuid/desactivar')
@@ -165,7 +193,12 @@ export class ProyectoController {
     if (!res.exitoso) {
       throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
     }
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+      _resultado: res.resultado,
+    };
   }
 
   @Get(':uuid/presupuesto')
@@ -184,15 +217,18 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
+      _resultado: res.resultado,
     };
   }
 
   @Patch(':uuid/calcular-presupuesto')
+  @Post(':uuid/calcular-presupuesto')
   @Patch(':uuid/presupuesto-desde-cotizaciones')
+  @Post(':uuid/presupuesto-desde-cotizaciones')
   @ApiOperation({
     summary: 'Calcular el presupuesto del proyecto sumando sus cotizaciones',
     description:
-      'Suma el montoTotal de cada cotización del proyecto y actualiza el campo presupuesto. También se ejecuta automáticamente al crear una cotización.',
+      'Suma el montoTotal de cada cotización del proyecto y actualiza el campo presupuesto.',
   })
   @ApiResponse({ status: 200, type: PresupuestoCalculadoDto })
   @ApiResponse({ status: 404, description: 'El proyecto no existe.' })
@@ -210,6 +246,7 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
+      _resultado: res.resultado,
     };
   }
 
@@ -223,6 +260,11 @@ export class ProyectoController {
     if (!res.exitoso) {
       throw new BadRequestException({ exitoso: false, descripcion: res.descripcion });
     }
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+      _resultado: res.resultado,
+    };
   }
 }
