@@ -1,22 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Result } from 'src/common/interfaces/result';
 import { SendMailDto } from './dto/send-mail.dto';
-import { MailTemplateService } from './mail-template.servide';
+import { MailTemplateService } from './mail-template.service';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private readonly transporter: nodemailer.Transporter;
 
-  constructor(private readonly templateService: MailTemplateService) {
+  constructor(
+    private readonly templateService: MailTemplateService,
+    private readonly configService: ConfigService,
+  ) {
     this.transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST || 'smtp.gmail.com',
-      port: Number(process.env.MAIL_PORT) || 587,
+      host: this.configService.get<string>('MAIL_HOST') || 'smtp.gmail.com',
+      port: Number(this.configService.get<number | string>('MAIL_PORT')) || 587,
       secure: false,
       auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
+        user: this.configService.get<string>('MAIL_USER'),
+        pass: this.configService.get<string>('MAIL_PASS'),
       },
     });
   }
@@ -24,10 +28,11 @@ export class MailService {
   async enviarCorreo(dto: SendMailDto): Promise<Result<boolean>> {
     try {
       const html = this.templateService.render(dto.plantilla, dto.contexto || {});
-      const from =
-        dto.from ||
-        process.env.MAIL_FROM ||
-        `"Obrix Corporation" <${process.env.MAIL_USER}>`;
+      const mailUser = this.configService.get<string>('MAIL_USER');
+      const defaultFrom =
+        this.configService.get<string>('MAIL_FROM') ||
+        `"Obrix Corporation" <${mailUser}>`;
+      const from = dto.from || defaultFrom;
 
       await this.transporter.sendMail({
         from,

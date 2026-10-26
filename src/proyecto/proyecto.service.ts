@@ -1,20 +1,17 @@
-import { Inject, Injectable, Res } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Proyecto } from './entities/proyecto.entity';
-import { Repository } from 'typeorm';
 import { Result } from 'src/common/interfaces/result';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { Gasto } from 'src/gasto/entities/gasto.entity';
-import { MailService } from 'src/mail/mail.service';
-import { Mail } from 'nodemailer';
 
 @Injectable()
 export class ProyectoService {
-
   constructor(
     @InjectRepository(Proyecto)
     private readonly proyectoRepository: Repository<Proyecto>,
@@ -24,8 +21,6 @@ export class ProyectoService {
 
     @InjectRepository(Gasto)
     private readonly gastoRepository: Repository<Gasto>,
-
-    private readonly mailService: MailService
   ) {}
 
   async create(dto: CreateProyectoDto): Promise<Result<ProyectoResponseDto>> {
@@ -33,23 +28,24 @@ export class ProyectoService {
     const usuario = await this.usuarioRepository.findOne({
       where: { uuid: dto.uuidUsuario },
     });
-  
+
     if (!usuario) {
       return Result.fallo<ProyectoResponseDto>('El usuario especificado no existe.');
     }
-  
-    // 2. Crear la entidad
+
+    // 2. Crear la entidad con activo: true
     const nuevoProyecto = this.proyectoRepository.create({
       nombre: dto.nombre,
       servicio: dto.servicio,
-      presupuesto: 0.00,
+      presupuesto: 0.0,
+      activo: true,
       usuarios: [usuario],
       cliente: dto.cliente, // Cascade insert
     });
-  
+
     // 3. Guardar el proyecto en la base de datos
     const proyectoGuardado = await this.proyectoRepository.save(nuevoProyecto);
-  
+
     // 4. Cargar la entidad completa con todas sus relaciones para el DTO
     const proyectoCompleto = await this.proyectoRepository.findOne({
       where: { uuid: proyectoGuardado.uuid },
@@ -58,13 +54,12 @@ export class ProyectoService {
         usuarios: true,
       },
     });
-  
+
     if (!proyectoCompleto) {
       return Result.fallo<ProyectoResponseDto>('Error al recuperar el proyecto creado.');
     }
-  
+
     const respuestaDto = ProyectoResponseDto.fromEntity(proyectoCompleto);
-    
     return Result.ok(respuestaDto, 'Proyecto creado exitosamente.');
   }
 
@@ -95,41 +90,40 @@ export class ProyectoService {
         usuarios: true,
       },
     });
-  
+
     if (!proyectos || proyectos.length === 0) {
       return Result.fallo<ProyectoResponseDto[]>('No se encontraron proyectos para el usuario.');
     }
-  
+
     const proyectosDto = proyectos.map((proyecto) => ProyectoResponseDto.fromEntity(proyecto));
-  
     return Result.ok(proyectosDto, 'Proyectos del usuario encontrados.');
   }
 
   async findOneByUuid(uuidProyecto: string): Promise<Result<ProyectoResponseDto>> {
     const proyecto = await this.proyectoRepository.findOne({
-      where: { 
-        uuid: uuidProyecto 
+      where: {
+        uuid: uuidProyecto,
       },
       relations: {
         cliente: true,
         usuarios: true,
       },
     });
-  
+
     if (!proyecto) {
       return Result.fallo<ProyectoResponseDto>('Proyecto no encontrado.');
     }
-  
+
     return Result.ok(ProyectoResponseDto.fromEntity(proyecto), 'Proyecto encontrado.');
   }
 
   async update(uuid: string, dto: UpdateProyectoDto): Promise<Result<ProyectoResponseDto>> {
-    const proyecto = await this.proyectoRepository.findOne({ 
+    const proyecto = await this.proyectoRepository.findOne({
       where: { uuid },
       relations: {
         cliente: true,
         usuarios: true,
-      }
+      },
     });
 
     if (!proyecto) {
@@ -139,11 +133,13 @@ export class ProyectoService {
     if (dto.nombre) proyecto.nombre = dto.nombre;
     if (dto.servicio) proyecto.servicio = dto.servicio;
 
-
     const actualizado = await this.proyectoRepository.save(proyecto);
     return Result.ok(ProyectoResponseDto.fromEntity(actualizado), 'Proyecto actualizado exitosamente.');
   }
 
+  /**
+   * Borrado lógico: Desactiva el proyecto en lugar de eliminarlo físicamente de la base de datos
+   */
   async remove(uuid: string): Promise<Result<boolean>> {
     const proyecto = await this.proyectoRepository.findOne({ where: { uuid } });
 
@@ -151,12 +147,34 @@ export class ProyectoService {
       return Result.fallo<boolean>('Proyecto no encontrado.');
     }
 
-    await this.proyectoRepository.remove(proyecto);
-    return Result.ok(true, 'Proyecto eliminado exitosamente.');
+    proyecto.activo = false;
+    await this.proyectoRepository.save(proyecto);
+    return Result.ok(true, 'Proyecto desactivado exitosamente.');
+  }
+
+  /**
+   * Permite activar o desactivar un proyecto explícitamente (Borrado / reactivación lógica)
+   */
+  async cambiarEstado(uuid: string, activo: boolean): Promise<Result<ProyectoResponseDto>> {
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { uuid },
+      relations: { cliente: true, usuarios: true },
+    });
+
+    if (!proyecto) {
+      return Result.fallo<ProyectoResponseDto>('Proyecto no encontrado.');
+    }
+
+    proyecto.activo = activo;
+    const actualizado = await this.proyectoRepository.save(proyecto);
+
+    return Result.ok(
+      ProyectoResponseDto.fromEntity(actualizado),
+      `Proyecto ${activo ? 'activado' : 'desactivado'} exitosamente.`
+    );
   }
 
   async obtenerPresupuestoConGastosPorUuid(uuid: string): Promise<Result<any>> {
-    // 1. Buscamos el proyecto por UUID
     const proyecto = await this.proyectoRepository.findOne({
       where: { uuid },
     });
@@ -165,7 +183,6 @@ export class ProyectoService {
       return Result.fallo(`El proyecto con UUID ${uuid} no fue encontrado.`);
     }
 
-    // 2. Sumamos los gastos asociados agrupando correctamente para PostgreSQL usando el uuid
     const resultado = await this.proyectoRepository
       .createQueryBuilder('proyecto')
       .leftJoin('proyecto.gastos', 'gasto')
@@ -199,10 +216,6 @@ export class ProyectoService {
     return Result.ok(datosPresupuesto, 'Presupuesto y gastos calculados correctamente.');
   }
 
-  /**
-   * Define el presupuesto del proyecto como la suma de montoTotal de todas sus cotizaciones.
-   * Se invoca desde el endpoint PATCH y también al crear una cotización.
-   */
   async calcularYActualizarPresupuesto(
     uuidProyecto: string,
   ): Promise<Result<PresupuestoCalculadoDto>> {
@@ -243,44 +256,45 @@ export class ProyectoService {
     );
   }
 
-  async agregarUsuarioAProyecto(uuidProyecto: string, uuidUsuario: string): Promise<Result<Proyecto>> {
-    // 1. Buscar el proyecto por UUID para obtener su ID numérico
+  async agregarUsuarioAProyecto(
+    uuidProyecto: string,
+    uuidUsuario: string,
+  ): Promise<Result<ProyectoResponseDto>> {
     const proyecto = await this.proyectoRepository.findOne({ where: { uuid: uuidProyecto } });
     if (!proyecto) {
-      return Result.fallo<Proyecto>(`Proyecto con UUID ${uuidProyecto} no encontrado.`);
+      return Result.fallo<ProyectoResponseDto>(`Proyecto con UUID ${uuidProyecto} no encontrado.`);
     }
-  
-    // 2. Buscar al usuario por UUID para obtener su ID numérico
+
     const usuario = await this.usuarioRepository.findOne({ where: { uuid: uuidUsuario } });
     if (!usuario) {
-      return Result.fallo<Proyecto>(`Usuario con UUID ${uuidUsuario} no encontrado.`);
+      return Result.fallo<ProyectoResponseDto>(`Usuario con UUID ${uuidUsuario} no encontrado.`);
     }
-  
-    // 3. Verificar si ya existe la relación en la tabla intermedia para evitar duplicados
+
     const existeRelacion = await this.proyectoRepository
       .createQueryBuilder()
       .relation(Proyecto, 'usuarios')
       .of(proyecto.id)
       .loadMany();
-  
+
     const yaEstaAsociado = existeRelacion.some((u) => u.id === usuario.id);
     if (yaEstaAsociado) {
-      return Result.fallo<Proyecto>('El usuario ya está asociado al proyecto.');
+      return Result.fallo<ProyectoResponseDto>('El usuario ya está asociado al proyecto.');
     }
-  
-    // 4. Agregar la relación directamente a la tabla intermedia de forma segura
+
     await this.proyectoRepository
       .createQueryBuilder()
       .relation(Proyecto, 'usuarios')
       .of(proyecto.id)
       .add(usuario.id);
-  
-    // 5. Retornar el proyecto actualizado con todos sus usuarios
+
     const proyectoActualizado = await this.proyectoRepository.findOne({
       where: { uuid: uuidProyecto },
       relations: { usuarios: true, cliente: true },
     });
-  
-    return Result.ok(proyectoActualizado!, 'Usuario agregado al proyecto correctamente');
+
+    return Result.ok(
+      ProyectoResponseDto.fromEntity(proyectoActualizado!),
+      'Usuario agregado al proyecto correctamente',
+    );
   }
 }

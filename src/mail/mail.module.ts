@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { MailController } from './mail.controller';
-import { MailTemplateService } from './mail-template.servide';
+import { MailTemplateService } from './mail-template.service';
 
 @Module({
   controllers: [MailController],

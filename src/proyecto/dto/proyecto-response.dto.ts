@@ -45,6 +45,9 @@ export class ProyectoResponseDto {
   @ApiPropertyOptional({ example: 500000 })
   presupuesto?: number;
 
+  @ApiProperty({ example: true })
+  activo!: boolean;
+
   @ApiProperty({ example: '2026-09-14T01:15:29.728Z' })
   creadoEl!: Date;
 
@@ -60,6 +63,7 @@ export class ProyectoResponseDto {
       nombre: proyecto.nombre,
       servicio: proyecto.servicio,
       presupuesto: proyecto.presupuesto,
+      activo: proyecto.activo ?? true,
       creadoEl: proyecto.creadoEl,
       cliente: proyecto.cliente
         ? {

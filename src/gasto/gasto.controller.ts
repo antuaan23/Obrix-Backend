@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
 
 import { GastoService } from './gasto.service';
 import { CreateGastoDto } from './dto/create-gasto.dto';
@@ -29,6 +29,8 @@ export class GastoController {
   @Post()
   @ApiOperation({ summary: 'Registrar un nuevo gasto con comprobante' })
   @ApiConsumes('multipart/form-data')
+  @ApiResponse({ status: 201, description: 'Gasto registrado exitosamente.' })
+  @ApiResponse({ status: 400, description: 'Error al registrar el gasto o datos inválidos.' })
   @UseInterceptors(
     FileInterceptor('imagen', {
       storage: memoryStorage(),
@@ -42,23 +44,38 @@ export class GastoController {
   ) {
     const result = await this.gastoService.create(dto, usuarioUuid, file);
 
-    // 👈 Si el Result viene con fallo, lanzamos una excepción HTTP de NestJS
     if (!result.exitoso) {
-      throw new BadRequestException(result.descripcion);
+      throw new BadRequestException({
+        exitoso: result.exitoso,
+        descripcion: result.descripcion,
+      });
     }
 
-    return result;
+    return {
+      exitoso: result.exitoso,
+      descripcion: result.descripcion,
+      respuesta: result.resultado,
+    };
   }
 
   @Get('proyecto/:proyectoUuid')
   @ApiOperation({ summary: 'Obtener todos los gastos asociados a un proyecto' })
+  @ApiResponse({ status: 200, description: 'Gastos obtenidos exitosamente.' })
+  @ApiResponse({ status: 404, description: 'Proyecto no encontrado o sin gastos.' })
   async findByProyectoUuid(@Param('proyectoUuid') proyectoUuid: string) {
     const result = await this.gastoService.findByProyectoUuid(proyectoUuid);
 
     if (!result.exitoso) {
-      throw new NotFoundException(result.descripcion);
+      throw new NotFoundException({
+        exitoso: result.exitoso,
+        descripcion: result.descripcion,
+      });
     }
 
-    return result;
+    return {
+      exitoso: result.exitoso,
+      descripcion: result.descripcion,
+      respuesta: result.resultado,
+    };
   }
 }

@@ -9,8 +9,7 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { MaterialModule } from './material/material.module';
 import { CotizacionModule } from './cotizacion/cotizacion.module';
 import { MailModule } from './mail/mail.module';
-import { EquipoModule } from './equipo/equipo.module';
-import { RolModule } from './rol/rol.modules';
+import { RolModule } from './rol/rol.module';
 
 @Module({
   imports: [
@@ -42,7 +41,6 @@ import { RolModule } from './rol/rol.modules';
     MaterialModule,
     CotizacionModule,
     MailModule,
-    EquipoModule,
     RolModule,
   ],
 })

@@ -15,7 +15,6 @@ import { Cliente } from "../../cliente/entities/cliente.entity";
 import { Gasto } from "src/gasto/entities/gasto.entity";
 import { Usuario } from "src/usuario/entities/usuario.entity";
 import { Cotizacion } from "src/cotizacion/entities/cotizacion.entity";
-import { Equipo } from "src/equipo/entities/equipo.entity";
 
 @Entity('proyectos')
 export class Proyecto {
@@ -58,13 +57,12 @@ export class Proyecto {
   @OneToMany(() => Cotizacion, (cotizacion) => cotizacion.proyecto)
   cotizaciones!: Cotizacion[];
 
+  @Column({ type: 'boolean', default: true })
+  activo: boolean = true;
+
   @CreateDateColumn({ type: 'timestamp' , name: 'creado_el' })
   creadoEl!: Date;
 
   @UpdateDateColumn({ type: 'timestamp' , name: 'actualizado_el' })
   actualizadoEl!: Date;
-
-  @ManyToOne(() => Equipo, (equipo) => equipo.proyectos, {nullable: true})
-  @JoinColumn({name: 'equipo_id'})
-  equipo!: Equipo
 }

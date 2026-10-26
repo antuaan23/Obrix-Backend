@@ -4,6 +4,6 @@ import { Rol } from './entities/rol.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Rol])],
-  exports: [TypeOrmModule], 
+  exports: [TypeOrmModule],
 })
 export class RolModule {}

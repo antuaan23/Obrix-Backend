@@ -1,4 +1,16 @@
-import { Controller, Post, Body, Patch, Param, InternalServerErrorException, NotFoundException, Get, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Patch,
+  Param,
+  InternalServerErrorException,
+  NotFoundException,
+  BadRequestException,
+  Get,
+  Delete,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
@@ -34,20 +46,20 @@ export class ProyectoController {
       descripcion: res.descripcion,
       respuesta: res.resultado,
     };
-  }  
+  }
 
   @Get('/usuario/:uuid')
-  @ApiOperation({ summary: 'Obtener proyecto por UUID de Usuario.' })
+  @ApiOperation({ summary: 'Obtener proyectos asociados a un UUID de Usuario' })
   @ApiResponse({
     status: 200,
-    description: 'Proyecto encontrado exitosamente.',
+    description: 'Proyectos encontrados exitosamente.',
     type: [ProyectoResponseDto],
   })
   async findOne(@Param('uuid') uuid: string) {
     const res = await this.proyectoService.findByUsuarioUuid(uuid);
 
     if (!res.exitoso) {
-      throw new InternalServerErrorException({
+      throw new NotFoundException({
         exitoso: res.exitoso,
         descripcion: res.descripcion,
       });
@@ -58,10 +70,10 @@ export class ProyectoController {
       descripcion: res.descripcion,
       respuesta: res.resultado,
     };
-  }  
+  }
 
   @Get(':uuid')
-  @ApiOperation({ summary: 'Obtener proyecto por UUID de Proyecto.' })
+  @ApiOperation({ summary: 'Obtener proyecto por UUID de Proyecto' })
   @ApiResponse({
     status: 200,
     description: 'Proyecto encontrado exitosamente.',
@@ -71,7 +83,7 @@ export class ProyectoController {
     const res = await this.proyectoService.findOneByUuid(uuid);
 
     if (!res.exitoso) {
-      throw new InternalServerErrorException({
+      throw new NotFoundException({
         exitoso: res.exitoso,
         descripcion: res.descripcion,
       });
@@ -84,13 +96,12 @@ export class ProyectoController {
     };
   }
 
-
   @Post()
-  @ApiOperation({ summary: 'Crear un nuevo proyecto (solo con nombre o con datos opcionales)' })
+  @ApiOperation({ summary: 'Crear un nuevo proyecto' })
   async crear(@Body() dto: CreateProyectoDto) {
     const res = await this.proyectoService.create(dto);
     if (!res.exitoso) {
-      throw new InternalServerErrorException({ exitoso: false, descripcion: res.descripcion });
+      throw new BadRequestException({ exitoso: false, descripcion: res.descripcion });
     }
     return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
   }
@@ -99,6 +110,58 @@ export class ProyectoController {
   @ApiOperation({ summary: 'Asignar cliente o actualizar datos del proyecto' })
   async update(@Param('uuid') uuid: string, @Body() dto: UpdateProyectoDto) {
     const res = await this.proyectoService.update(uuid, dto);
+    if (!res.exitoso) {
+      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
+    }
+    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+  }
+
+  /**
+   * Borrado lógico: Desactiva el proyecto
+   */
+  @Delete(':uuid')
+  @ApiOperation({ summary: 'Borrado lógico: Desactivar un proyecto por UUID' })
+  @ApiResponse({ status: 200, description: 'Proyecto desactivado exitosamente.' })
+  @ApiResponse({ status: 404, description: 'Proyecto no encontrado.' })
+  async remove(@Param('uuid') uuid: string) {
+    const res = await this.proyectoService.remove(uuid);
+    if (!res.exitoso) {
+      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
+    }
+    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+  }
+
+  /**
+   * Cambiar estado activo/inactivo (Borrado / Reactivación lógica)
+   */
+  @Patch(':uuid/estado')
+  @ApiOperation({ summary: 'Activar o desactivar un proyecto (Borrado/Reactivación lógica)' })
+  @ApiResponse({ status: 200, description: 'Estado del proyecto actualizado.', type: ProyectoResponseDto })
+  async cambiarEstado(
+    @Param('uuid') uuid: string,
+    @Body() body: { activo: boolean },
+  ) {
+    const res = await this.proyectoService.cambiarEstado(uuid, body.activo);
+    if (!res.exitoso) {
+      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
+    }
+    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+  }
+
+  @Patch(':uuid/activar')
+  @ApiOperation({ summary: 'Activar un proyecto' })
+  async activar(@Param('uuid') uuid: string) {
+    const res = await this.proyectoService.cambiarEstado(uuid, true);
+    if (!res.exitoso) {
+      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
+    }
+    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+  }
+
+  @Patch(':uuid/desactivar')
+  @ApiOperation({ summary: 'Desactivar un proyecto' })
+  async desactivar(@Param('uuid') uuid: string) {
+    const res = await this.proyectoService.cambiarEstado(uuid, false);
     if (!res.exitoso) {
       throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
     }
@@ -124,10 +187,6 @@ export class ProyectoController {
     };
   }
 
-  /**
-   * Front: botón "Generar presupuesto" → PATCH /api/proyectos/{uuid}/presupuesto-desde-cotizaciones
-   * Suma todas las cotizaciones del proyecto y guarda el resultado en proyecto.presupuesto.
-   */
   @Patch(':uuid/calcular-presupuesto')
   @Patch(':uuid/presupuesto-desde-cotizaciones')
   @ApiOperation({
@@ -155,10 +214,15 @@ export class ProyectoController {
   }
 
   @Post(':uuid/usuarios')
+  @ApiOperation({ summary: 'Asociar un usuario a un proyecto' })
   async agregarUsuario(
     @Param('uuid') uuidProyecto: string,
-    @Body() dto: AgregarUsuarioProyectoDto, 
+    @Body() dto: AgregarUsuarioProyectoDto,
   ) {
-    return this.proyectoService.agregarUsuarioAProyecto(uuidProyecto, dto.uuidUsuario);
+    const res = await this.proyectoService.agregarUsuarioAProyecto(uuidProyecto, dto.uuidUsuario);
+    if (!res.exitoso) {
+      throw new BadRequestException({ exitoso: false, descripcion: res.descripcion });
+    }
+    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
   }
 }

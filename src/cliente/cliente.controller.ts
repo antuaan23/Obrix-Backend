@@ -1,11 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Body,
+  NotFoundException,
+} from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ClienteService } from './cliente.service';
-import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { ClienteResponseDto } from './dto/proyecto-response.dto';
+import { ClienteResponseDto } from './dto/cliente-response.dto';
 
-@Controller('cliente')
+@ApiTags('Clientes')
+@Controller('clientes')
 export class ClienteController {
   constructor(private readonly clienteService: ClienteService) {}
 
@@ -14,13 +21,14 @@ export class ClienteController {
   @ApiResponse({
     status: 200,
     description: 'Cliente encontrado exitosamente.',
-    type: [ClienteResponseDto],
+    type: ClienteResponseDto,
   })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado.' })
   async findOne(@Param('uuid') uuid: string) {
     const res = await this.clienteService.findOne(uuid);
 
     if (!res.exitoso) {
-      throw new InternalServerErrorException({
+      throw new NotFoundException({
         exitoso: res.exitoso,
         descripcion: res.descripcion,
       });
@@ -33,13 +41,31 @@ export class ClienteController {
     };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateClienteDto: UpdateClienteDto) {
-    return this.clienteService.update(+id, updateClienteDto);
-  }
+  @Patch(':uuid')
+  @ApiOperation({ summary: 'Actualizar datos de un cliente por UUID.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Cliente actualizado exitosamente.',
+    type: ClienteResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado.' })
+  async update(
+    @Param('uuid') uuid: string,
+    @Body() updateClienteDto: UpdateClienteDto,
+  ) {
+    const res = await this.clienteService.update(uuid, updateClienteDto);
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.clienteService.remove(+id);
+    if (!res.exitoso) {
+      throw new NotFoundException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 }

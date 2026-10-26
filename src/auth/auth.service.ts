@@ -8,13 +8,10 @@ import { LoginDto } from './dto/login.dto';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { Result } from 'src/common/interfaces/result';
 import { Rol } from 'src/rol/entities/rol.entity';
+import { RolEnum } from 'src/rol/rol.enum';
 import { AuthPayload, PasswordChangedPayload } from './interfaces/auth.interface';
 import { MailService } from 'src/mail/mail.service';
-import { Subject } from 'rxjs';
-import { plainToClass } from 'class-transformer';
-import { getMaxListeners } from 'events';
 import { MailTemplate } from 'src/mail/mail-template.enum';
-import { content } from 'pdfkit/js/page';
 import { VerificarCodigoDto } from './dto/verificar-codigo.dto';
 import { ResetPasswordDto } from './dto/resetear-pass.dto';
 import { CambiarPassDto } from './dto/cambiar-pass.dto';
@@ -56,7 +53,7 @@ export class AuthService {
       email,
       password: hashedPassword,
       telefono,
-      rol: {id: 2},
+      rol: { id: RolEnum.LIDER } as any,
       activo: true,
     });
 
@@ -187,8 +184,8 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(nuevaPassword, 10);
 
     usuario.password = hashedPassword;
-    usuario.codigoRecuperacion = undefined as any;
-    usuario.codigoExpiracion = undefined as any;
+    usuario.codigoRecuperacion = null as any;
+    usuario.codigoExpiracion = null as any;
     await this.usuarioRepository.save(usuario);
 
     return Result.ok<PasswordChangedPayload>(

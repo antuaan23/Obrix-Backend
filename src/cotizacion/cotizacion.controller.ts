@@ -9,16 +9,16 @@ import {
   HttpStatus,
   StreamableFile,
   Res,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiOperation, ApiProduces, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { CotizacionService } from './cotizacion.service';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
-import { Cotizacion } from './entities/cotizacion.entity';
-import { Result } from 'src/common/interfaces/result';
 
 @ApiTags('Cotizaciones')
-@Controller('cotizacion')
+@Controller('cotizaciones')
 export class CotizacionController {
   constructor(private readonly cotizacionService: CotizacionService) {}
 
@@ -34,8 +34,21 @@ export class CotizacionController {
     status: 400,
     description: 'Datos de entrada inválidos o recurso no encontrado (Proyecto/Material).',
   })
-  async create(@Body() createCotizacionDto: CreateCotizacionDto): Promise<Result<Cotizacion>> {
-    return await this.cotizacionService.crearCotizacion(createCotizacionDto);
+  async create(@Body() createCotizacionDto: CreateCotizacionDto) {
+    const res = await this.cotizacionService.crearCotizacion(createCotizacionDto);
+
+    if (!res.exitoso) {
+      throw new BadRequestException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 
   @Get('proyecto/:proyectoUuid')
@@ -51,12 +64,25 @@ export class CotizacionController {
   })
   async obtenerPorProyecto(
     @Param('proyectoUuid', new ParseUUIDPipe()) proyectoUuid: string,
-  ): Promise<Result<Cotizacion[]>> {
-    return await this.cotizacionService.obtenerPorProyectoUuid(proyectoUuid);
+  ) {
+    const res = await this.cotizacionService.obtenerPorProyectoUuid(proyectoUuid);
+
+    if (!res.exitoso) {
+      throw new NotFoundException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 
   /**
-   * Front: botón "Exportar PDF" → GET /api/cotizacion/{uuid}/pdf
+   * Front: botón "Exportar PDF" → GET /api/cotizaciones/{uuid}/pdf
    * Respuesta: application/pdf (descarga).
    */
   @Get(':uuid/pdf')

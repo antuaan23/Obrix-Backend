@@ -10,8 +10,8 @@ import { Result } from 'src/common/interfaces/result';
 import { PdfService } from 'src/pdf/pdf.service';
 import { ProyectoService } from 'src/proyecto/proyecto.service';
 import { MailService } from 'src/mail/mail.service';
-import { Mail } from 'nodemailer';
 import { MailTemplate } from 'src/mail/mail-template.enum';
+import { RolEnum } from 'src/rol/rol.enum';
 
 @Injectable()
 export class CotizacionService {
@@ -41,6 +41,14 @@ export class CotizacionService {
      });
     if (!proyecto) {
       return Result.fallo<Cotizacion>('El proyecto especificado no existe.');
+    }
+
+    const liderProyecto = proyecto.usuarios?.find(
+      (u) => u.rol?.nombre === 'Lider' || u.rol?.id === RolEnum.LIDER
+    );
+    
+    if (!liderProyecto || !liderProyecto.email){
+      return Result.fallo<Cotizacion>('No se encontró un usuario líder asignado a este proyecto.');
     }
 
     const cotizacion = new Cotizacion();
@@ -73,14 +81,6 @@ export class CotizacionService {
     cotizacion.montoTotal = totalCotizacion;
 
     const cotizacionGuardada = await this.cotizacionRepo.save(cotizacion);
-
-    const liderProyecto = proyecto.usuarios?.find(
-      (u) => u.rol.nombre === 'Lider'
-    );
-    
-    if (!liderProyecto || !liderProyecto.email){
-      return Result.fallo<Cotizacion>('No se encontró un usuario lider asignado a este proyecto')
-    }
 
     await this.mailService.enviarCorreo({
       plantilla: MailTemplate.COTIZACION_CREADA,

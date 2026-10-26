@@ -1,8 +1,7 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, NotFoundException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
 import { Material } from './entities/material.entity';
-import { Result } from 'src/common/interfaces/result';
 
 @ApiTags('Materiales')
 @Controller('materiales')
@@ -16,7 +15,24 @@ export class MaterialController {
     status: 200, 
     description: 'Lista de materiales obtenida correctamente.' 
   })
-  async findAll(): Promise<Result<Material[]>> {
-    return await this.materialService.findAll();
+  @ApiResponse({
+    status: 404,
+    description: 'No se encontraron materiales registrados.',
+  })
+  async findAll() {
+    const res = await this.materialService.findAll();
+
+    if (!res.exitoso) {
+      throw new NotFoundException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 }
