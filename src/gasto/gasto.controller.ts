@@ -18,6 +18,7 @@ import { GastoService } from './gasto.service';
 import { CreateGastoDto } from './dto/create-gasto.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { GastoResponseDto } from './dto/gasto-response.dto';
 
 @ApiTags('Gastos')
 @ApiBearerAuth()
@@ -54,7 +55,7 @@ export class GastoController {
     return {
       exitoso: result.exitoso,
       descripcion: result.descripcion,
-      respuesta: result.resultado,
+      respuesta: result.resultado ? GastoResponseDto.fromEntity(result.resultado) : null,
     };
   }
 
@@ -75,7 +76,7 @@ export class GastoController {
     return {
       exitoso: result.exitoso,
       descripcion: result.descripcion,
-      respuesta: result.resultado,
+      respuesta: result.resultado?.map(GastoResponseDto.fromEntity),
     };
   }
 }

@@ -204,7 +204,6 @@ export class ProyectoService {
     const diferencia = totalGastos - presupuesto;
 
     const datosPresupuesto = {
-      id: proyecto.id,
       uuid: proyecto.uuid,
       nombre: proyecto.nombre,
       presupuesto,

@@ -20,7 +20,7 @@ import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { AgregarUsuarioProyectoDto } from './dto/agregar-usuario-proyecto.dto';
 
 @ApiTags('Proyectos')
-@Controller(['proyecto', 'proyectos'])
+@Controller('proyectos')
 export class ProyectoController {
   constructor(private readonly proyectoService: ProyectoService) {}
 
@@ -45,10 +45,8 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
-
   @Get('/usuario/:uuid')
   @ApiOperation({ summary: 'Obtener proyectos asociados a un UUID de Usuario' })
   @ApiResponse({
@@ -70,10 +68,8 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
-
   @Get(':uuid')
   @ApiOperation({ summary: 'Obtener proyecto por UUID de Proyecto' })
   @ApiResponse({
@@ -95,10 +91,8 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
-
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo proyecto' })
   async crear(@Body() dto: CreateProyectoDto) {
@@ -110,10 +104,8 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
-
   @Patch(':uuid')
   @ApiOperation({ summary: 'Asignar cliente o actualizar datos del proyecto' })
   async update(@Param('uuid') uuid: string, @Body() dto: UpdateProyectoDto) {
@@ -125,13 +117,8 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
-
-  /**
-   * Borrado lógico: Desactiva el proyecto
-   */
   @Delete(':uuid')
   @ApiOperation({ summary: 'Borrado lógico: Desactivar un proyecto por UUID' })
   @ApiResponse({ status: 200, description: 'Proyecto desactivado exitosamente.' })
@@ -145,13 +132,8 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
-
-  /**
-   * Cambiar estado activo/inactivo (Borrado / Reactivación lógica)
-   */
   @Patch(':uuid/estado')
   @ApiOperation({ summary: 'Activar o desactivar un proyecto (Borrado/Reactivación lógica)' })
   @ApiResponse({ status: 200, description: 'Estado del proyecto actualizado.', type: ProyectoResponseDto })
@@ -167,7 +149,6 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
 
@@ -182,7 +163,6 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
 
@@ -197,7 +177,6 @@ export class ProyectoController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
 

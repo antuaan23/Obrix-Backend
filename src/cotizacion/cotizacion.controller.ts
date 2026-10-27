@@ -19,7 +19,7 @@ import { CotizacionService } from './cotizacion.service';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 
 @ApiTags('Cotizaciones')
-@Controller(['cotizacion', 'cotizaciones'])
+@Controller('cotizaciones')
 export class CotizacionController {
   constructor(private readonly cotizacionService: CotizacionService) {}
 
@@ -49,7 +49,6 @@ export class CotizacionController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
 
@@ -80,7 +79,6 @@ export class CotizacionController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
 
@@ -113,7 +111,6 @@ export class CotizacionController {
       exitoso: res.exitoso,
       descripcion: res.descripcion,
       respuesta: res.resultado,
-      _resultado: res.resultado,
     };
   }
 

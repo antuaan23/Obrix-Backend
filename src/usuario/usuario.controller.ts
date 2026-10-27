@@ -22,7 +22,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 
 @ApiTags('Usuarios')
-@Controller(['usuario', 'usuarios'])
+@Controller('usuarios')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
 
@@ -52,7 +52,6 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
-      _resultado: resultado.resultado,
     };
   }
 
@@ -79,11 +78,24 @@ export class UsuarioController {
       });
     }
 
+    const { password: _, id: __, liderId: ___, rol, codigoRecuperacion: ____, codigoExpiracion: _____, ...rest } = resultado.resultado as any;
+    const trabajadorDto: UsuarioDto = {
+      uuid: rest.uuid,
+      rut: rest.rut,
+      nombre: rest.nombre,
+      ap_paterno: rest.ap_paterno,
+      ap_materno: rest.ap_materno,
+      email: rest.email,
+      telefono: rest.telefono,
+      activo: rest.activo,
+      creado_el: rest.creado_el,
+      actualizado_el: rest.actualizado_el,
+    };
+
     return {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
-      respuesta: resultado.resultado,
-      _resultado: resultado.resultado,
+      respuesta: trabajadorDto,
     };
   }
 
@@ -106,11 +118,21 @@ export class UsuarioController {
       });
     }
 
+    const trabajadoresDto = (resultado.resultado as any[]).map((u) => ({
+      uuid: u.uuid,
+      rut: u.rut,
+      nombre: u.nombre,
+      ap_paterno: u.ap_paterno,
+      ap_materno: u.ap_materno,
+      email: u.email,
+      telefono: u.telefono,
+      activo: u.activo,
+    } as UsuarioDto));
+
     return {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
-      respuesta: resultado.resultado,
-      _resultado: resultado.resultado,
+      respuesta: trabajadoresDto,
     };
   }
 
@@ -133,7 +155,6 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
-      _resultado: resultado.resultado,
     };
   }
 
@@ -168,7 +189,6 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
-      _resultado: resultado.resultado,
     };
   }
 
@@ -220,7 +240,6 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
-      _resultado: resultado.resultado,
     };
   }
 
@@ -240,7 +259,6 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
-      _resultado: resultado.resultado,
     };
   }
 
@@ -260,7 +278,6 @@ export class UsuarioController {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
       respuesta: resultado.resultado,
-      _resultado: resultado.resultado,
     };
   }
 }
