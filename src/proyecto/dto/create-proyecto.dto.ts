@@ -4,6 +4,7 @@ import {
   IsUUID, 
   IsOptional, 
   IsNumber, 
+  IsDateString,
   ValidateNested 
 } from "class-validator";
 import { Type } from "class-transformer";
@@ -34,6 +35,22 @@ export class CreateProyectoDto {
   @IsString()
   @IsNotEmpty()
   servicio!: string;
+
+  @ApiProperty({
+    description: 'Fecha de inicio del proyecto',
+    example: '2025-01-15'
+  })
+  @IsDateString()
+  @IsNotEmpty()
+  fechaInicio!: string;
+
+  @ApiProperty({
+    description: 'Fecha estimada de término del proyecto',
+    example: '2025-06-30'
+  })
+  @IsDateString()
+  @IsNotEmpty()
+  fechaEstimadaTermino!: string;
 
   @ApiProperty({
     description: 'Datos para la creación del cliente',

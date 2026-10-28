@@ -57,6 +57,12 @@ export class Proyecto {
   @OneToMany(() => Cotizacion, (cotizacion) => cotizacion.proyecto)
   cotizaciones!: Cotizacion[];
 
+  @Column({ type: 'date', name: 'fecha_inicio' })
+  fechaInicio!: Date;
+
+  @Column({ type: 'date', name: 'fecha_estimada_termino' })
+  fechaEstimadaTermino!: Date;
+
   @Column({ type: 'boolean', default: true })
   activo: boolean = true;
 

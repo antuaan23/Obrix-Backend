@@ -11,6 +11,7 @@ import { CotizacionModule } from './cotizacion/cotizacion.module';
 import { MailModule } from './mail/mail.module';
 import { RolModule } from './rol/rol.module';
 import { AvanceModule } from './avance/avance.module';
+import { BitacoraModule } from './bitacora/bitacora.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AvanceModule } from './avance/avance.module';
     MailModule,
     RolModule,
     AvanceModule,
+    BitacoraModule,
   ],
 })
 export class AppModule {}

@@ -9,6 +9,7 @@ import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { Gasto } from 'src/gasto/entities/gasto.entity';
+import { BitacoraService } from 'src/bitacora/bitacora.service';
 
 @Injectable()
 export class ProyectoService {
@@ -21,6 +22,8 @@ export class ProyectoService {
 
     @InjectRepository(Gasto)
     private readonly gastoRepository: Repository<Gasto>,
+
+    private readonly bitacoraService: BitacoraService,
   ) {}
 
   async create(dto: CreateProyectoDto): Promise<Result<ProyectoResponseDto>> {
@@ -39,12 +42,17 @@ export class ProyectoService {
       servicio: dto.servicio,
       presupuesto: 0.0,
       activo: true,
+      fechaInicio: new Date(dto.fechaInicio),
+      fechaEstimadaTermino: new Date(dto.fechaEstimadaTermino),
       usuarios: [usuario],
       cliente: dto.cliente, // Cascade insert
     });
 
     // 3. Guardar el proyecto en la base de datos
     const proyectoGuardado = await this.proyectoRepository.save(nuevoProyecto);
+
+    // 3b. Crear la bitácora automáticamente para el nuevo proyecto
+    await this.bitacoraService.crearParaProyecto(proyectoGuardado);
 
     // 4. Cargar la entidad completa con todas sus relaciones para el DTO
     const proyectoCompleto = await this.proyectoRepository.findOne({
