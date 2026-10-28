@@ -26,7 +26,7 @@ export class AuthService {
     private readonly rolRepository: Repository<Rol>,
 
     private readonly mailService: MailService
-  ) {}
+  ) { }
 
   // REGISTRO
   async registro(registerDto: RegisterDto): Promise<Result<Omit<Usuario, 'password'>>> {
@@ -37,8 +37,8 @@ export class AuthService {
     });
 
     if (usuarioExistente) {
-      const mensaje = usuarioExistente.email === email 
-        ? 'El correo electrónico ya está registrado.' 
+      const mensaje = usuarioExistente.email === email
+        ? 'El correo electrónico ya está registrado.'
         : 'El RUT ya se encuentra registrado.';
       return Result.fallo<Omit<Usuario, 'password'>>(mensaje);
     }
@@ -71,6 +71,7 @@ export class AuthService {
     const usuario = await this.usuarioRepository
       .createQueryBuilder('usuario')
       .addSelect('usuario.password')
+      .leftJoinAndSelect('usuario.rol', 'rol')
       .where('usuario.email = :email', { email })
       .getOne();
 
@@ -90,12 +91,13 @@ export class AuthService {
     }
 
     // 4. Generar JWT Token y retornar solo el payload esperado
-    const payload = { 
-      sub: usuario.id, 
-      uuid: usuario.uuid, 
-      email: usuario.email, 
-      nombre: usuario.nombre, 
-      ap_paterno: usuario.ap_paterno 
+    const payload = {
+      sub: usuario.id,
+      uuid: usuario.uuid,
+      email: usuario.email,
+      nombre: usuario.nombre,
+      ap_paterno: usuario.ap_paterno,
+      rol: usuario.rol?.nombre   // Solo el nombre del rol
     };
 
     const token = this.jwtService.sign(payload);
@@ -106,13 +108,13 @@ export class AuthService {
     );
   }
 
-  async solicitarRecuperacion(dto: ResetPasswordDto): Promise<Result<ResetPasswordDto>>{
+  async solicitarRecuperacion(dto: ResetPasswordDto): Promise<Result<ResetPasswordDto>> {
     const { email } = dto;
     const usuario = await this.usuarioRepository.findOne({
       where: { email }
     });
 
-    if(!usuario){
+    if (!usuario) {
       return Result.fallo<ResetPasswordDto>(`¡Mm, hay algo sospechoso... Si el correo realmente está registrado, se enviará el código de recuperación. `)
     }
     const codigo = Math.floor(100000 + Math.random() * 900000).toString();
@@ -134,14 +136,14 @@ export class AuthService {
       }
     })
 
-    if(!resultadoCorreo){
+    if (!resultadoCorreo) {
       return Result.fallo<ResetPasswordDto>(`No se pudo enviar el correo de recuperación.`)
     }
 
-    return Result.ok<ResetPasswordDto>({email: usuario.email}, 'Codigo de recuperación enviado exitosamente.')
+    return Result.ok<ResetPasswordDto>({ email: usuario.email }, 'Codigo de recuperación enviado exitosamente.')
   }
 
-  async verificarCodigo(dto: VerificarCodigoDto): Promise<Result<{ email?: string }>>{
+  async verificarCodigo(dto: VerificarCodigoDto): Promise<Result<{ email?: string }>> {
     const { email, codigo } = dto;
 
     // Buscamos directamente por el código si no viene el email
@@ -161,7 +163,7 @@ export class AuthService {
       { email: usuario.email },
       'Código verificado correctamente'
     );
-}
+  }
 
   async cambiarPasswordConCodigo(dto: CambiarPassDto): Promise<Result<PasswordChangedPayload>> {
     const { email, codigo, nuevaPassword, confirmaNuevaPassword } = dto;
@@ -171,7 +173,7 @@ export class AuthService {
     }
 
     const usuario = await this.usuarioRepository.findOne({ where: { email } });
-    
+
     // VALIDACIÓN DE SEGURIDAD: Si no tiene código activo o el código no coincide, se rechaza
     if (!usuario || !usuario.codigoRecuperacion || usuario.codigoRecuperacion !== codigo) {
       return Result.fallo<PasswordChangedPayload>('Petición no autorizada. El código de recuperación es inválido o no ha sido verificado.');
