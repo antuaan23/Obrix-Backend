@@ -10,6 +10,7 @@ import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { Gasto } from 'src/gasto/entities/gasto.entity';
 import { BitacoraService } from 'src/bitacora/bitacora.service';
+import { Cliente } from 'src/cliente/entities/cliente.entity';
 
 @Injectable()
 export class ProyectoService {
@@ -22,6 +23,9 @@ export class ProyectoService {
 
     @InjectRepository(Gasto)
     private readonly gastoRepository: Repository<Gasto>,
+
+    @InjectRepository(Cliente)
+    private readonly clienteRepository: Repository<Cliente>,
 
     private readonly bitacoraService: BitacoraService,
   ) {}
@@ -36,7 +40,17 @@ export class ProyectoService {
       return Result.fallo<ProyectoResponseDto>('El usuario especificado no existe.');
     }
 
-    // 2. Crear la entidad con activo: true
+    // 2. Buscar si el cliente ya existe por email, si no, crearlo
+    let cliente = await this.clienteRepository.findOne({
+      where: { email: dto.cliente.email },
+    });
+
+    if (!cliente) {
+      cliente = this.clienteRepository.create(dto.cliente);
+      cliente = await this.clienteRepository.save(cliente);
+    }
+
+    // 3. Crear el proyecto usando el cliente encontrado o recién creado
     const nuevoProyecto = this.proyectoRepository.create({
       nombre: dto.nombre,
       servicio: dto.servicio,
@@ -45,10 +59,10 @@ export class ProyectoService {
       fechaInicio: new Date(dto.fechaInicio),
       fechaEstimadaTermino: new Date(dto.fechaEstimadaTermino),
       usuarios: [usuario],
-      cliente: dto.cliente, // Cascade insert
+      cliente,
     });
 
-    // 3. Guardar el proyecto en la base de datos
+    // 4. Guardar el proyecto
     const proyectoGuardado = await this.proyectoRepository.save(nuevoProyecto);
 
     // 3b. Crear la bitácora automáticamente para el nuevo proyecto
@@ -146,18 +160,29 @@ export class ProyectoService {
   }
 
   /**
-   * Borrado lógico: Desactiva el proyecto en lugar de eliminarlo físicamente de la base de datos
+   * Elimina el proyecto físicamente junto a su cliente asociado.
    */
   async remove(uuid: string): Promise<Result<boolean>> {
-    const proyecto = await this.proyectoRepository.findOne({ where: { uuid } });
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { uuid },
+      relations: { cliente: true },
+    });
 
     if (!proyecto) {
       return Result.fallo<boolean>('Proyecto no encontrado.');
     }
 
-    proyecto.activo = false;
-    await this.proyectoRepository.save(proyecto);
-    return Result.ok(true, 'Proyecto desactivado exitosamente.');
+    const clienteId = proyecto.cliente?.id;
+
+    // Eliminar el proyecto físicamente (las relaciones con cascade se limpian solas)
+    await this.proyectoRepository.remove(proyecto);
+
+    // Eliminar el cliente asociado si existe
+    if (clienteId) {
+      await this.clienteRepository.delete(clienteId);
+    }
+
+    return Result.ok(true, 'Proyecto y cliente eliminados exitosamente.');
   }
 
   /**
