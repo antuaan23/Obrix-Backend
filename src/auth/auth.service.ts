@@ -15,6 +15,7 @@ import { MailTemplate } from 'src/mail/mail-template.enum';
 import { VerificarCodigoDto } from './dto/verificar-codigo.dto';
 import { ResetPasswordDto } from './dto/resetear-pass.dto';
 import { CambiarPassDto } from './dto/cambiar-pass.dto';
+import { SuscripcionService } from 'src/suscripcion/suscripcion.service';
 
 @Injectable()
 export class AuthService {
@@ -25,12 +26,13 @@ export class AuthService {
     @InjectRepository(Rol)
     private readonly rolRepository: Repository<Rol>,
 
-    private readonly mailService: MailService
+    private readonly mailService: MailService,
+    private readonly suscripcionService: SuscripcionService,
   ) { }
 
   // REGISTRO
   async registro(registerDto: RegisterDto): Promise<Result<Omit<Usuario, 'password'>>> {
-    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } = registerDto;
+    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono, planId } = registerDto;
 
     const usuarioExistente = await this.usuarioRepository.findOne({
       where: [{ email }, { rut }],
@@ -58,6 +60,15 @@ export class AuthService {
     });
 
     await this.usuarioRepository.save(nuevoUsuario);
+
+    // Crear la suscripción con el plan elegido
+    try {
+      await this.suscripcionService.crear(nuevoUsuario.id, planId);
+    } catch (error: any) {
+      // Si el plan no existe, eliminamos el usuario recién creado y retornamos error
+      await this.usuarioRepository.remove(nuevoUsuario);
+      return Result.fallo<Omit<Usuario, 'password'>>(error.message ?? 'Error al asignar el plan.');
+    }
 
     const { password: _, ...usuarioSinPassword } = nuevoUsuario;
     return Result.ok(usuarioSinPassword, 'Usuario registrado exitosamente.');

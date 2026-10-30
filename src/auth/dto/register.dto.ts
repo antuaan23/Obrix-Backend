@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class RegisterDto {
 
@@ -58,5 +58,13 @@ export class RegisterDto {
     @IsString()
     @IsNotEmpty()
     telefono!: string;
+
+    @ApiProperty({
+        description: 'ID del plan elegido al registrarse (ver GET /plan)',
+        example: 1
+    })
+    @IsInt()
+    @IsNotEmpty()
+    planId!: number;
 
 }

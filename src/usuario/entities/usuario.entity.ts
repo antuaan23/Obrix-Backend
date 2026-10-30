@@ -1,7 +1,8 @@
 import { Cliente } from 'src/cliente/entities/cliente.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany, UpdateDateColumn, ManyToMany, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Generated, OneToMany, UpdateDateColumn, ManyToMany, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 import { Rol } from 'src/rol/entities/rol.entity';
+import { Suscripcion } from 'src/suscripcion/entities/suscripcion.entity';
 
 @Entity('usuarios')
 export class Usuario {
@@ -50,7 +51,7 @@ export class Usuario {
     proyectos!: Proyecto[];
 
     @ManyToOne(() => Rol, (rol) => rol.usuarios, { eager: true, nullable: false })
-    @JoinColumn({ name: 'rol_id' }) 
+    @JoinColumn({ name: 'rol_id' })
     rol!: Rol;
 
     @Column({ nullable: true })
@@ -58,7 +59,6 @@ export class Usuario {
 
     @Column({ type: 'timestamp', nullable: true })
     codigoExpiracion?: Date;
-
 
     @ManyToOne(() => Usuario, (usuario) => usuario.trabajadores, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'lider_id' })
@@ -69,4 +69,7 @@ export class Usuario {
 
     @OneToMany(() => Usuario, (usuario) => usuario.lider)
     trabajadores!: Usuario[];
+
+    @OneToOne(() => Suscripcion, (suscripcion) => suscripcion.usuario)
+    suscripcion!: Suscripcion;
 }

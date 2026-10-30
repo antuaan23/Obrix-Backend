@@ -12,6 +12,8 @@ import { MailModule } from './mail/mail.module';
 import { RolModule } from './rol/rol.module';
 import { AvanceModule } from './avance/avance.module';
 import { BitacoraModule } from './bitacora/bitacora.module';
+import { PlanModule } from './plan/plan.module';
+import { SuscripcionModule } from './suscripcion/suscripcion.module';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { BitacoraModule } from './bitacora/bitacora.module';
     RolModule,
     AvanceModule,
     BitacoraModule,
+    PlanModule,
+    SuscripcionModule,
   ],
 })
 export class AppModule {}

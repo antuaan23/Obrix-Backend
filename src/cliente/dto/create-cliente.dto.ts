@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator'
 
 export class CreateClienteDto {
 
@@ -26,6 +26,15 @@ export class CreateClienteDto {
     @IsString()
     @IsOptional()
     ap_materno!: string;
+
+    @ApiProperty({
+        description: 'RUT del cliente en formato XXXXXXXX-X',
+        example: '20392017-2'
+    })
+    @IsString()
+    @IsNotEmpty()
+    @Matches(/^\d{7,8}-[\dkK]$/, { message: 'El RUT debe tener el formato XXXXXXXX-X (ej: 20392017-2)' })
+    rut!: string;
 
     @ApiProperty({
         description: 'Correo del cliente',

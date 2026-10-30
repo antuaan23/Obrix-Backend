@@ -11,6 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { Rol } from 'src/rol/entities/rol.entity';
 import { MailModule } from 'src/mail/mail.module';
+import { SuscripcionModule } from 'src/suscripcion/suscripcion.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { MailModule } from 'src/mail/mail.module';
         signOptions: { expiresIn: '8h' },
       }),
     }),
-    MailModule
+    MailModule,
+    SuscripcionModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard],
