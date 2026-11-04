@@ -12,13 +12,17 @@ import {
   Res,
   BadRequestException,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiProduces, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiProduces, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { CotizacionService } from './cotizacion.service';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTags('Cotizaciones')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('cotizaciones')
 export class CotizacionController {
   constructor(private readonly cotizacionService: CotizacionService) {}

@@ -19,19 +19,30 @@ import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ApiOperation, ApiResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsuarioListResponseDto, ErrorResponseDto, UsuarioDto } from './dto/usuario-response.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolEnum } from 'src/rol/rol.enum';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 
 @ApiTags('Usuarios')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('usuarios')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Obtener la lista completa de usuarios' })
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN)
+  @ApiOperation({ summary: 'Obtener la lista completa de usuarios (Solo Admin)' })
   @ApiResponse({
     status: 200,
     description: 'Lista de usuarios recuperada exitosamente.',
     type: UsuarioListResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acceso denegado: requiere rol ADMIN.',
   })
   @ApiResponse({
     status: 500,
@@ -56,12 +67,12 @@ export class UsuarioController {
   }
 
   // ==========================================
-  // CREAR TRABAJADOR POR LÍDER
+  // CREAR TRABAJADOR POR LÍDER O ADMIN
   // ==========================================
   @Post('trabajador')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN, RolEnum.LIDER)
   @HttpCode(HttpStatus.CREATED)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Registrar un trabajador vinculado al líder autenticado' })
   @ApiResponse({ status: 201, description: 'Trabajador registrado exitosamente.' })
   @ApiResponse({ status: 400, description: 'Datos inválidos o correo/RUT ya existen.' })
@@ -103,9 +114,9 @@ export class UsuarioController {
   // LISTAR TRABAJADORES DEL LÍDER AUTENTICADO
   // ==========================================
   @Get('mis-trabajadores')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN, RolEnum.LIDER)
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Obtener la lista de trabajadores asociados al líder autenticado' })
   @ApiResponse({ status: 200, description: 'Lista de trabajadores obtenida exitosamente.' })
   async obtenerMisTrabajadores(@GetUser('userId') liderId: number) {
@@ -196,6 +207,8 @@ export class UsuarioController {
    * Borrado lógico: Desactivar usuario
    */
   @Delete(':uuid')
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN, RolEnum.LIDER)
   @ApiOperation({ summary: 'Borrado lógico: Desactivar un usuario por UUID' })
   @ApiResponse({ status: 200, description: 'Usuario desactivado exitosamente.' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
@@ -221,7 +234,9 @@ export class UsuarioController {
    * Cambiar estado activo/inactivo (Borrado / Reactivación lógica)
    */
   @Patch(':uuid/estado')
-  @ApiOperation({ summary: 'Activar o desactivar un usuario (Borrado / Reactivación lógica)' })
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN)
+  @ApiOperation({ summary: 'Activar o desactivar un usuario (Solo Admin)' })
   @ApiResponse({ status: 200, description: 'Estado del usuario actualizado.', type: UsuarioDto })
   async cambiarEstado(
     @Param('uuid') uuid: string,
@@ -244,7 +259,9 @@ export class UsuarioController {
   }
 
   @Patch(':uuid/activar')
-  @ApiOperation({ summary: 'Activar un usuario' })
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN)
+  @ApiOperation({ summary: 'Activar un usuario (Solo Admin)' })
   async activar(@Param('uuid') uuid: string) {
     const resultado = await this.usuarioService.cambiarEstado(uuid, true);
 
@@ -263,7 +280,9 @@ export class UsuarioController {
   }
 
   @Patch(':uuid/desactivar')
-  @ApiOperation({ summary: 'Desactivar un usuario' })
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN)
+  @ApiOperation({ summary: 'Desactivar un usuario (Solo Admin)' })
   async desactivar(@Param('uuid') uuid: string) {
     const resultado = await this.usuarioService.cambiarEstado(uuid, false);
 

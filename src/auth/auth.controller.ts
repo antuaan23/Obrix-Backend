@@ -5,7 +5,8 @@ import {
   HttpCode, 
   HttpStatus, 
   UnauthorizedException, 
-  BadRequestException 
+  BadRequestException,
+  Headers,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -96,10 +97,13 @@ export class AuthController {
   // PASO 3: Cambiar la contraseña de forma definitiva
   @Post('cambiar-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Cambiar contraseña con el proceso completado' })
+  @ApiOperation({ summary: 'Cambiar contraseña con reset_token (en Bearer o body)' })
   @ApiResponse({ status: 200, description: 'Contraseña cambiada exitosamente.' })
-  async cambiarPassword(@Body() dto: CambiarPassDto) {
-    const res = await this.authService.cambiarPasswordConCodigo(dto);
+  async cambiarPassword(
+    @Body() dto: CambiarPassDto,
+    @Headers('authorization') authHeader?: string,
+  ) {
+    const res = await this.authService.cambiarPasswordConCodigo(dto, authHeader);
 
     if (!res.exitoso) {
       throw new BadRequestException({ exitoso: res.exitoso, descripcion: res.descripcion });

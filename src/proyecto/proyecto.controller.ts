@@ -10,16 +10,20 @@ import {
   Get,
   Delete,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { AgregarUsuarioProyectoDto } from './dto/agregar-usuario-proyecto.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTags('Proyectos')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('proyectos')
 export class ProyectoController {
   constructor(private readonly proyectoService: ProyectoService) {}

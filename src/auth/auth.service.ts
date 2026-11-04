@@ -108,7 +108,8 @@ export class AuthService {
       email: usuario.email,
       nombre: usuario.nombre,
       ap_paterno: usuario.ap_paterno,
-      rol: usuario.rol?.nombre
+      rol: usuario.rol?.nombre,
+      rolId: usuario.rol?.id,
     };
 
     const token = this.jwtService.sign(payload);
@@ -154,7 +155,7 @@ export class AuthService {
     return Result.ok<ResetPasswordDto>({ email: usuario.email }, 'Codigo de recuperación enviado exitosamente.')
   }
 
-  async verificarCodigo(dto: VerificarCodigoDto): Promise<Result<{ email?: string }>> {
+  async verificarCodigo(dto: VerificarCodigoDto): Promise<Result<{ email: string; reset_token: string }>> {
     const { email, codigo } = dto;
 
     // Buscamos directamente por el código si no viene el email
@@ -170,28 +171,84 @@ export class AuthService {
       return Result.fallo('El código de verificación ha expirado.');
     }
 
+    // Generar reset_token temporal de 15 minutos firmado criptográficamente
+    const reset_token = this.jwtService.sign(
+      {
+        sub: usuario.id,
+        uuid: usuario.uuid,
+        email: usuario.email,
+        scope: 'password_reset',
+      },
+      { expiresIn: '15m' },
+    );
+
     return Result.ok(
-      { email: usuario.email },
-      'Código verificado correctamente'
+      {
+        email: usuario.email,
+        reset_token,
+      },
+      'Código verificado correctamente. Puedes proceder a cambiar tu contraseña.',
     );
   }
 
-  async cambiarPasswordConCodigo(dto: CambiarPassDto): Promise<Result<PasswordChangedPayload>> {
-    const { email, codigo, nuevaPassword, confirmaNuevaPassword } = dto;
+  async cambiarPasswordConCodigo(
+    dto: CambiarPassDto,
+    authHeader?: string,
+  ): Promise<Result<PasswordChangedPayload>> {
+    const { nuevaPassword } = dto;
+    const confirmacion = dto.confirmarNuevaPassword ?? dto.confirmaNuevaPassword;
 
-    if (nuevaPassword !== confirmaNuevaPassword) {
+    if (!confirmacion) {
+      return Result.fallo<PasswordChangedPayload>('Debes confirmar la nueva contraseña.');
+    }
+
+    if (nuevaPassword !== confirmacion) {
       return Result.fallo<PasswordChangedPayload>('Las contraseñas no coinciden.');
     }
 
-    const usuario = await this.usuarioRepository.findOne({ where: { email } });
+    // Extraer token desde Authorization: Bearer <token> o desde dto.token
+    const token = authHeader?.replace(/^Bearer\s+/i, '').trim() || dto.token?.trim();
 
-    // VALIDACIÓN DE SEGURIDAD: Si no tiene código activo o el código no coincide, se rechaza
-    if (!usuario || !usuario.codigoRecuperacion || usuario.codigoRecuperacion !== codigo) {
-      return Result.fallo<PasswordChangedPayload>('Petición no autorizada. El código de recuperación es inválido o no ha sido verificado.');
+    let usuario: Usuario | null = null;
+
+    if (token) {
+      try {
+        const decoded = this.jwtService.verify(token);
+        if (decoded.scope !== 'password_reset') {
+          return Result.fallo<PasswordChangedPayload>('El token no es válido para restablecer contraseña.');
+        }
+        usuario = await this.usuarioRepository.findOne({ where: { id: decoded.sub } });
+      } catch (err: any) {
+        return Result.fallo<PasswordChangedPayload>('El token de recuperación es inválido o ha expirado.');
+      }
+    } else if (dto.codigo) {
+      // Compatibilidad por código OTP si no usa token
+      const codigo = dto.codigo.trim();
+      const email = dto.email ? dto.email.trim().toLowerCase() : undefined;
+
+      usuario = await this.usuarioRepository.findOne({
+        where: email
+          ? { email, codigoRecuperacion: codigo }
+          : { codigoRecuperacion: codigo },
+      });
+
+      if (!usuario || !usuario.codigoRecuperacion || usuario.codigoRecuperacion !== codigo) {
+        return Result.fallo<PasswordChangedPayload>(
+          'Petición no autorizada. El código de recuperación es inválido o no ha sido verificado.',
+        );
+      }
+
+      if (usuario.codigoExpiracion && new Date() > new Date(usuario.codigoExpiracion)) {
+        return Result.fallo<PasswordChangedPayload>('El código de recuperación ha expirado.');
+      }
+    } else {
+      return Result.fallo<PasswordChangedPayload>(
+        'Debes enviar el token de recuperación (en Authorization Bearer) o el código.',
+      );
     }
 
-    if (usuario.codigoExpiracion && new Date() > new Date(usuario.codigoExpiracion)) {
-      return Result.fallo<PasswordChangedPayload>('El código de recuperación ha expirado.');
+    if (!usuario) {
+      return Result.fallo<PasswordChangedPayload>('Usuario no encontrado.');
     }
 
     const hashedPassword = await bcrypt.hash(nuevaPassword, 10);
@@ -203,7 +260,7 @@ export class AuthService {
 
     return Result.ok<PasswordChangedPayload>(
       { email: usuario.email },
-      'Contraseña actualizada exitosamente.'
+      'Contraseña actualizada exitosamente.',
     );
   }
 }

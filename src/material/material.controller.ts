@@ -1,9 +1,18 @@
-import { Controller, Get, HttpCode, HttpStatus, NotFoundException } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
-import { Material } from './entities/material.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTags('Materiales')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('materiales')
 export class MaterialController {
   constructor(private readonly materialService: MaterialService) {}
