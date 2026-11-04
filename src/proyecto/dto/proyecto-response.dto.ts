@@ -21,15 +21,41 @@ export class ClienteResumenDto {
   telefono!: string;
 }
 
+export class RolResumenDto {
+  @ApiProperty({ example: 2 })
+  id!: number;
+
+  @ApiProperty({ example: 'Lider' })
+  nombre!: string;
+}
+
 export class UsuarioResumenDto {
   @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
   uuid!: string;
 
+  @ApiPropertyOptional({ example: '12345678-9' })
+  rut?: string;
+
+  @ApiPropertyOptional({ example: 'Carlos' })
+  nombre?: string;
+
+  @ApiPropertyOptional({ example: 'González' })
+  ap_paterno?: string;
+
+  @ApiPropertyOptional({ example: 'Pérez' })
+  ap_materno?: string;
+
   @ApiProperty({ example: 'usuario@gmail.com' })
   email!: string;
 
+  @ApiPropertyOptional({ example: '+56912345678' })
+  telefono?: string;
+
   @ApiProperty({ example: true })
   activo!: boolean;
+
+  @ApiPropertyOptional({ type: RolResumenDto })
+  rol?: RolResumenDto;
 }
 
 export class ProyectoResponseDto {
@@ -86,8 +112,19 @@ export class ProyectoResponseDto {
       usuarios:
         proyecto.usuarios?.map((u) => ({
           uuid: u.uuid,
+          rut: u.rut,
+          nombre: u.nombre,
+          ap_paterno: u.ap_paterno,
+          ap_materno: u.ap_materno,
           email: u.email,
+          telefono: u.telefono,
           activo: u.activo,
+          rol: u.rol
+            ? {
+                id: u.rol.id,
+                nombre: u.rol.nombre,
+              }
+            : undefined,
         })) || [],
     };
   }

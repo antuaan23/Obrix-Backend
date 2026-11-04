@@ -73,7 +73,9 @@ export class ProyectoService {
       where: { uuid: proyectoGuardado.uuid },
       relations: {
         cliente: true,
-        usuarios: true,
+        usuarios: {
+          rol: true,
+        },
       },
     });
 
@@ -89,7 +91,9 @@ export class ProyectoService {
     const proyectos = await this.proyectoRepository.find({
       relations: {
         cliente: true,
-        usuarios: true,
+        usuarios: {
+          rol: true,
+        },
       },
       order: {
         creadoEl: 'DESC',
@@ -101,17 +105,24 @@ export class ProyectoService {
   }
 
   async findByUsuarioUuid(uuidUsuario: string): Promise<Result<ProyectoResponseDto[]>> {
-    const proyectos = await this.proyectoRepository.find({
-      where: {
-        usuarios: {
-          uuid: uuidUsuario,
-        },
-      },
-      relations: {
-        cliente: true,
-        usuarios: true,
-      },
-    });
+    const proyectos = await this.proyectoRepository
+      .createQueryBuilder('proyecto')
+      .leftJoinAndSelect('proyecto.cliente', 'cliente')
+      .leftJoinAndSelect('proyecto.usuarios', 'usuario')
+      .leftJoinAndSelect('usuario.rol', 'rol')
+      .where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('pu.proyecto_id')
+          .from('proyectos_usuarios', 'pu')
+          .innerJoin('usuarios', 'u', 'u.id = pu.usuario_id')
+          .where('u.uuid = :uuidUsuario')
+          .getQuery();
+        return 'proyecto.id IN ' + subQuery;
+      })
+      .setParameter('uuidUsuario', uuidUsuario)
+      .orderBy('proyecto.creadoEl', 'DESC')
+      .getMany();
 
     if (!proyectos || proyectos.length === 0) {
       return Result.fallo<ProyectoResponseDto[]>('No se encontraron proyectos para el usuario.');
@@ -128,7 +139,9 @@ export class ProyectoService {
       },
       relations: {
         cliente: true,
-        usuarios: true,
+        usuarios: {
+          rol: true,
+        },
       },
     });
 
@@ -144,7 +157,9 @@ export class ProyectoService {
       where: { uuid },
       relations: {
         cliente: true,
-        usuarios: true,
+        usuarios: {
+          rol: true,
+        },
       },
     });
 
@@ -191,7 +206,7 @@ export class ProyectoService {
   async cambiarEstado(uuid: string, activo: boolean): Promise<Result<ProyectoResponseDto>> {
     const proyecto = await this.proyectoRepository.findOne({
       where: { uuid },
-      relations: { cliente: true, usuarios: true },
+      relations: { cliente: true, usuarios: { rol: true } },
     });
 
     if (!proyecto) {
@@ -321,7 +336,7 @@ export class ProyectoService {
 
     const proyectoActualizado = await this.proyectoRepository.findOne({
       where: { uuid: uuidProyecto },
-      relations: { usuarios: true, cliente: true },
+      relations: { usuarios: { rol: true }, cliente: true },
     });
 
     return Result.ok(

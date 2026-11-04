@@ -1,10 +1,10 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  HttpCode, 
-  HttpStatus, 
-  UnauthorizedException, 
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
   BadRequestException,
   Headers,
 } from '@nestjs/common';
@@ -19,7 +19,7 @@ import { CambiarPassDto } from './dto/cambiar-pass.dto';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
@@ -46,7 +46,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Iniciar sesión y obtener token JWT' })
   @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso.' })
-  @ApiResponse({ status: 401, description: 'Credenciales inválidas.' })
+  @ApiResponse({ status: 401, description: 'Correo o contraseña incorrectos..' })
   async login(@Body() loginDto: LoginDto) {
     const res = await this.authService.login(loginDto);
 

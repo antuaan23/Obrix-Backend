@@ -87,7 +87,7 @@ export class AuthService {
       .getOne();
 
     if (!usuario) {
-      return Result.fallo<AuthPayload>('Credenciales inválidas.');
+      return Result.fallo<AuthPayload>('Correo o contraseña incorrectos.');
     }
 
     // 2. Verificar si está activo
@@ -98,7 +98,7 @@ export class AuthService {
     // 3. Verificar contraseña con bcrypt (ahora usuario.password tiene el hash)
     const esPasswordValida = await bcrypt.compare(password, usuario.password);
     if (!esPasswordValida) {
-      return Result.fallo<AuthPayload>('Credenciales inválidas.');
+      return Result.fallo<AuthPayload>('Correo o contraseña incorrectos.');
     }
 
     // 4. Generar JWT Token y retornar solo el payload esperado
