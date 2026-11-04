@@ -5,8 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { Usuario } from './entities/usuario.entity';
 import { Result } from 'src/common/interfaces/result';
 import { UsuarioDto } from './dto/usuario-response.dto';
-import { RegisterDto } from 'src/auth/dto/register.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { CreateTrabajadorDto } from './dto/create-trabajador.dto';
 import { RolEnum } from 'src/rol/rol.enum';
 
 @Injectable()
@@ -100,8 +100,8 @@ export class UsuarioService {
     return Result.ok<UsuarioDto>(usuarioDto, 'Usuario actualizado exitosamente.');
   }
 
-  async crearTrabajador(liderId: number, registerDto: RegisterDto): Promise<Result<Omit<Usuario, 'password'>>> {
-    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } = registerDto;
+  async crearTrabajador(liderId: number, dto: CreateTrabajadorDto): Promise<Result<Omit<Usuario, 'password'>>> {
+    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } = dto;
 
     const usuarioExistente = await this.usuarioRepository.findOne({
       where: [{ email }, { rut }],

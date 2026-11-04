@@ -14,7 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
-import { RegisterDto } from 'src/auth/dto/register.dto';
+import { CreateTrabajadorDto } from './dto/create-trabajador.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ApiOperation, ApiResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsuarioListResponseDto, ErrorResponseDto, UsuarioDto } from './dto/usuario-response.dto';
@@ -67,7 +67,7 @@ export class UsuarioController {
   @ApiResponse({ status: 400, description: 'Datos inválidos o correo/RUT ya existen.' })
   async crearTrabajador(
     @GetUser('userId') liderId: number,
-    @Body() registerDto: RegisterDto,
+    @Body() registerDto: CreateTrabajadorDto,
   ) {
     const resultado = await this.usuarioService.crearTrabajador(liderId, registerDto);
 
