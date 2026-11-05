@@ -40,14 +40,20 @@ export class ProyectoService {
       return Result.fallo<ProyectoResponseDto>('El usuario especificado no existe.');
     }
 
-    // 2. Buscar si el cliente ya existe por email, si no, crearlo
+    // 2. Buscar si el cliente ya existe por RUT, si no, crearlo
     let cliente = await this.clienteRepository.findOne({
-      where: { email: dto.cliente.email },
+      where: { rut: dto.cliente.rut },
     });
 
     if (!cliente) {
-      cliente = this.clienteRepository.create(dto.cliente);
+      cliente = this.clienteRepository.create({
+        ...dto.cliente,
+        usuario,
+      });
       cliente = await this.clienteRepository.save(cliente);
+    } else if (!cliente.usuario) {
+      cliente.usuario = usuario;
+      await this.clienteRepository.save(cliente);
     }
 
     // 3. Crear el proyecto usando el cliente encontrado o recién creado
@@ -192,9 +198,14 @@ export class ProyectoService {
     // Eliminar el proyecto físicamente (las relaciones con cascade se limpian solas)
     await this.proyectoRepository.remove(proyecto);
 
-    // Eliminar el cliente asociado si existe
+    // Eliminar el cliente asociado solo si ningún otro proyecto lo utiliza
     if (clienteId) {
-      await this.clienteRepository.delete(clienteId);
+      const otrosProyectos = await this.proyectoRepository.count({
+        where: { cliente: { id: clienteId } },
+      });
+      if (otrosProyectos === 0) {
+        await this.clienteRepository.delete(clienteId);
+      }
     }
 
     return Result.ok(true, 'Proyecto y cliente eliminados exitosamente.');
