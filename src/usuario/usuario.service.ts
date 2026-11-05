@@ -16,32 +16,8 @@ export class UsuarioService {
     private readonly usuarioRepository: Repository<Usuario>,
   ) {}
 
-  async findAll(): Promise<Result<UsuarioDto[]>> {
-    const usuarios = await this.usuarioRepository.find({
-      select: {
-        uuid: true,
-        rut: true,
-        nombre: true,
-        ap_paterno: true,
-        ap_materno: true,
-        email: true,
-        telefono: true,
-        rol: true,
-        activo: true,
-      },
-    });
-
-    return Result.ok(usuarios, 'Lista de usuarios obtenida correctamente');
-  }
-
-  async findOne(uuid: string): Promise<Result<UsuarioDto>> {
-    const usuario = await this.usuarioRepository.findOneBy({ uuid });
-
-    if (!usuario) {
-      return Result.fallo<UsuarioDto>('Usuario no encontrado');
-    }
-
-    const usuarioDto: UsuarioDto = {
+  private mapearUsuarioDto(usuario: Usuario): UsuarioDto {
+    return {
       uuid: usuario.uuid,
       rut: usuario.rut,
       nombre: usuario.nombre,
@@ -49,19 +25,79 @@ export class UsuarioService {
       ap_materno: usuario.ap_materno,
       email: usuario.email,
       telefono: usuario.telefono,
+      rolId: usuario.rol?.id,
+      rolNombre: usuario.rol?.nombre,
+      rol: usuario.rol
+        ? {
+            id: usuario.rol.id,
+            nombre: usuario.rol.nombre,
+            descripcion: usuario.rol.descripcion,
+          }
+        : undefined,
+      plan: usuario.suscripcion?.plan
+        ? {
+            id: usuario.suscripcion.plan.id,
+            nombre: usuario.suscripcion.plan.nombre,
+            precio_base: usuario.suscripcion.plan.precio_base,
+          }
+        : undefined,
       activo: usuario.activo,
       creado_el: usuario.creado_el,
       actualizado_el: usuario.actualizado_el,
     };
+  }
 
-    return Result.ok<UsuarioDto>(usuarioDto, `Usuario ${usuario.uuid} encontrado correctamente`);
+  async findAll(): Promise<Result<UsuarioDto[]>> {
+    const usuarios = await this.usuarioRepository.find({
+      relations: {
+        rol: true,
+        suscripcion: {
+          plan: true,
+        },
+      },
+      order: {
+        creado_el: 'DESC',
+      },
+    });
+
+    const usuariosDto = usuarios.map((u) => this.mapearUsuarioDto(u));
+    return Result.ok(usuariosDto, 'Lista de usuarios obtenida correctamente');
+  }
+
+  async findOne(uuid: string): Promise<Result<UsuarioDto>> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { uuid },
+      relations: {
+        rol: true,
+        suscripcion: {
+          plan: true,
+        },
+      },
+    });
+
+    if (!usuario) {
+      return Result.fallo<UsuarioDto>('Usuario no encontrado');
+    }
+
+    return Result.ok<UsuarioDto>(
+      this.mapearUsuarioDto(usuario),
+      `Usuario ${usuario.uuid} encontrado correctamente`,
+    );
   }
 
   /**
    * Actualizar únicamente correo electrónico y/o número telefónico
    */
   async update(uuid: string, dto: UpdateUsuarioDto): Promise<Result<UsuarioDto>> {
-    const usuario = await this.usuarioRepository.findOne({ where: { uuid } });
+    const usuario = await this.usuarioRepository.findOne({
+      where: { uuid },
+      relations: {
+        rol: true,
+        suscripcion: {
+          plan: true,
+        },
+      },
+    });
 
     if (!usuario) {
       return Result.fallo<UsuarioDto>('Usuario no encontrado.');
@@ -84,20 +120,10 @@ export class UsuarioService {
 
     await this.usuarioRepository.save(usuario);
 
-    const usuarioDto: UsuarioDto = {
-      uuid: usuario.uuid,
-      rut: usuario.rut,
-      nombre: usuario.nombre,
-      ap_paterno: usuario.ap_paterno,
-      ap_materno: usuario.ap_materno,
-      email: usuario.email,
-      telefono: usuario.telefono,
-      activo: usuario.activo,
-      creado_el: usuario.creado_el,
-      actualizado_el: usuario.actualizado_el,
-    };
-
-    return Result.ok<UsuarioDto>(usuarioDto, 'Usuario actualizado exitosamente.');
+    return Result.ok<UsuarioDto>(
+      this.mapearUsuarioDto(usuario),
+      'Usuario actualizado exitosamente.',
+    );
   }
 
   async crearTrabajador(liderId: number, dto: CreateTrabajadorDto): Promise<Result<Omit<Usuario, 'password'>>> {
@@ -136,13 +162,15 @@ export class UsuarioService {
     return Result.ok(usuarioSinPassword, 'Trabajador registrado exitosamente.');
   }
 
-  async obtenerTrabajadoresPorLider(liderId: number): Promise<Result<Usuario[]>> {
+  async obtenerTrabajadoresPorLider(liderId: number): Promise<Result<UsuarioDto[]>> {
     const trabajadores = await this.usuarioRepository.find({
       where: { liderId },
-      relations: { rol: true },
+      relations: { rol: true, suscripcion: { plan: true } },
+      order: { creado_el: 'DESC' },
     });
 
-    return Result.ok(trabajadores, 'Trabajadores obtenidos correctamente.');
+    const dtos = trabajadores.map((t) => this.mapearUsuarioDto(t));
+    return Result.ok(dtos, 'Trabajadores obtenidos correctamente.');
   }
 
   /**

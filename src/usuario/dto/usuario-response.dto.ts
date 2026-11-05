@@ -1,5 +1,27 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export class RolUsuarioDto {
+  @ApiProperty({ example: 2 })
+  id!: number;
+
+  @ApiProperty({ example: 'Lider' })
+  nombre!: string;
+
+  @ApiPropertyOptional({ example: 'Líder de obras y proyectos' })
+  descripcion?: string;
+}
+
+export class PlanUsuarioDto {
+  @ApiProperty({ example: 1 })
+  id!: number;
+
+  @ApiProperty({ example: 'Independiente' })
+  nombre!: string;
+
+  @ApiProperty({ example: 5750 })
+  precio_base!: number;
+}
+
 export class UsuarioDto {
   @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'UUID único del usuario' })
   uuid!: string;
@@ -7,28 +29,37 @@ export class UsuarioDto {
   @ApiProperty({ example: '12345678-9', description: 'RUT del usuario' })
   rut!: string;
 
-  @ApiProperty({ example: 'Leo', description: 'Nombre del usuario' })
+  @ApiProperty({ example: 'Vicente', description: 'Nombre del usuario' })
   nombre!: string;
 
-  @ApiProperty({ example: 'Messi', description: 'Apellido paterno del usuario' })
+  @ApiProperty({ example: 'González', description: 'Apellido paterno del usuario' })
   ap_paterno!: string;
 
-  @ApiPropertyOptional({ example: 'Cuccittini', description: 'Apellido materno del usuario' })
+  @ApiPropertyOptional({ example: 'Moya', description: 'Apellido materno del usuario' })
   ap_materno?: string;
 
-  @ApiProperty({ example: 'leo.messi10@gmail.com', description: 'Correo electrónico' })
+  @ApiProperty({ example: 'virexgonzalez.moya@gmail.com', description: 'Correo electrónico' })
   email!: string;
 
-  @ApiProperty({ example: '+56912345678', description: 'Teléfono de contacto' })
+  @ApiPropertyOptional({ example: '+56912345678', description: 'Teléfono de contacto' })
   telefono?: string;
 
-  @ApiProperty({ example: '2', description: 'Rol del usuario' })
+  @ApiPropertyOptional({ example: 2, description: 'ID del rol del usuario' })
   rolId?: number;
+
+  @ApiPropertyOptional({ example: 'Lider', description: 'Nombre del rol del usuario' })
+  rolNombre?: string;
+
+  @ApiPropertyOptional({ type: RolUsuarioDto, description: 'Detalle del rol' })
+  rol?: RolUsuarioDto;
+
+  @ApiPropertyOptional({ type: PlanUsuarioDto, description: 'Detalle del plan activo' })
+  plan?: PlanUsuarioDto;
 
   @ApiProperty({ example: true, description: 'Estado de la cuenta del usuario' })
   activo!: boolean;
 
-  @ApiProperty({ example: '2026-09-15T00:00:00.000Z', description: 'Fecha de creación' })
+  @ApiProperty({ example: '2026-09-15T00:00:00.000Z', description: 'Fecha de registro' })
   creado_el!: Date;
 
   @ApiProperty({ example: '2026-09-15T00:00:00.000Z', description: 'Fecha de última actualización' })

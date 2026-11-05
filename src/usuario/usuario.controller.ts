@@ -33,8 +33,8 @@ export class UsuarioController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(RolEnum.ADMIN)
-  @ApiOperation({ summary: 'Obtener la lista completa de usuarios (Solo Admin)' })
+  @Roles(RolEnum.ADMIN, RolEnum.LIDER)
+  @ApiOperation({ summary: 'Obtener la lista completa de usuarios (Admin y Líder)' })
   @ApiResponse({
     status: 200,
     description: 'Lista de usuarios recuperada exitosamente.',
@@ -129,21 +129,31 @@ export class UsuarioController {
       });
     }
 
-    const trabajadoresDto = (resultado.resultado as any[]).map((u) => ({
-      uuid: u.uuid,
-      rut: u.rut,
-      nombre: u.nombre,
-      ap_paterno: u.ap_paterno,
-      ap_materno: u.ap_materno,
-      email: u.email,
-      telefono: u.telefono,
-      activo: u.activo,
-    } as UsuarioDto));
+    return {
+      exitoso: resultado.exitoso,
+      descripcion: resultado.descripcion,
+      respuesta: resultado.resultado,
+    };
+  }
+
+  @Get('perfil')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Obtener el perfil completo del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Perfil obtenido exitosamente.', type: UsuarioDto })
+  async obtenerPerfil(@GetUser('uuid') uuid: string) {
+    const resultado = await this.usuarioService.findOne(uuid);
+
+    if (!resultado.exitoso) {
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: resultado.descripcion,
+      });
+    }
 
     return {
       exitoso: resultado.exitoso,
       descripcion: resultado.descripcion,
-      respuesta: trabajadoresDto,
+      respuesta: resultado.resultado,
     };
   }
 
