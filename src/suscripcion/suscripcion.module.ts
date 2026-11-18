@@ -9,13 +9,12 @@ import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 import { Cliente } from 'src/cliente/entities/cliente.entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([Suscripcion, Usuario, Proyecto, Cliente]),
-        PlanModule,
-    ],
-    controllers: [SuscripcionController],
-    providers: [SuscripcionService],
-    exports: [SuscripcionService],
+  imports: [
+    TypeOrmModule.forFeature([Suscripcion, Usuario, Proyecto, Cliente]),
+    PlanModule,
+  ],
+  controllers: [SuscripcionController],
+  providers: [SuscripcionService],
+  exports: [SuscripcionService],
 })
-export class SuscripcionModule { }
-
+export class SuscripcionModule {}

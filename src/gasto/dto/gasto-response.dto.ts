@@ -22,13 +22,17 @@ export class GastoResponseDto {
   @ApiProperty({ example: 'Compra de Vulcanita y Perfiles' })
   nombre!: string;
 
-  @ApiProperty({ example: 'Planchas de vulcanita 15mm y montantes para tabiquería' })
+  @ApiProperty({
+    example: 'Planchas de vulcanita 15mm y montantes para tabiquería',
+  })
   descripcion!: string;
 
   @ApiProperty({ example: 45000 })
   monto!: number;
 
-  @ApiPropertyOptional({ example: 'https://storage.dev/boletas/comprobante.jpg' })
+  @ApiPropertyOptional({
+    example: 'https://storage.dev/boletas/comprobante.jpg',
+  })
   imagenUrl?: string;
 
   @ApiProperty({ type: UsuarioResumenGastoDto })

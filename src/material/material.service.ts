@@ -17,7 +17,9 @@ export class MaterialService {
     });
 
     if (!materiales || materiales.length === 0) {
-      return Result.fallo<Material[]>('No se encontraron materiales registrados.');
+      return Result.fallo<Material[]>(
+        'No se encontraron materiales registrados.',
+      );
     }
 
     return Result.ok(materiales, 'Lista de materiales obtenida correctamente.');

@@ -9,10 +9,7 @@ import { StorageService } from 'src/common/services/storage.service';
 import { MailModule } from 'src/mail/mail.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Gasto, Usuario, Proyecto]), 
-    MailModule
-  ],
+  imports: [TypeOrmModule.forFeature([Gasto, Usuario, Proyecto]), MailModule],
   controllers: [GastoController],
   providers: [GastoService, StorageService],
 })

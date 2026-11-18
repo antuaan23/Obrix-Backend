@@ -30,12 +30,20 @@ export class Avance {
   comprobanteUrl?: string;
 
   // Líder que registra el avance
-  @ManyToOne(() => Usuario, { onDelete: 'SET NULL', nullable: true, eager: false })
+  @ManyToOne(() => Usuario, {
+    onDelete: 'SET NULL',
+    nullable: true,
+    eager: false,
+  })
   @JoinColumn({ name: 'lider_id' })
   lider?: Usuario;
 
   // Trabajador que recibe el avance
-  @ManyToOne(() => Usuario, { onDelete: 'SET NULL', nullable: true, eager: false })
+  @ManyToOne(() => Usuario, {
+    onDelete: 'SET NULL',
+    nullable: true,
+    eager: false,
+  })
   @JoinColumn({ name: 'trabajador_id' })
   trabajador!: Usuario;
 

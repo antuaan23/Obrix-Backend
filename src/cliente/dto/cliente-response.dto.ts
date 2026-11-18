@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Cliente } from "../entities/cliente.entity";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Cliente } from '../entities/cliente.entity';
 
 export class ClienteResponseDto {
   @ApiProperty({ example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' })
@@ -19,7 +19,6 @@ export class ClienteResponseDto {
 
   @ApiPropertyOptional({ example: '+56912345678' })
   telefono?: string;
-
 
   static fromEntity(cliente: Cliente): ClienteResponseDto {
     return {

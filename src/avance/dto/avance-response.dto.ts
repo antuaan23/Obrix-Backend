@@ -25,7 +25,9 @@ export class AvanceResponseDto {
   @ApiProperty({ example: 150000 })
   monto!: number;
 
-  @ApiPropertyOptional({ example: 'https://storage.dev/avances/comprobante.jpg' })
+  @ApiPropertyOptional({
+    example: 'https://storage.dev/avances/comprobante.jpg',
+  })
   comprobanteUrl?: string;
 
   @ApiProperty({ type: UsuarioResumenAvanceDto })
@@ -50,7 +52,7 @@ export class AvanceResponseDto {
             ap_paterno: avance.lider.ap_paterno,
             email: avance.lider.email,
           }
-        : undefined as any,
+        : (undefined as any),
       trabajador: avance.trabajador
         ? {
             uuid: avance.trabajador.uuid,
@@ -58,7 +60,7 @@ export class AvanceResponseDto {
             ap_paterno: avance.trabajador.ap_paterno,
             email: avance.trabajador.email,
           }
-        : undefined as any,
+        : (undefined as any),
       creadoEl: avance.creadoEl,
     };
   }

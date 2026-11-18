@@ -14,10 +14,9 @@ export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<(RolEnum | string)[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.reflector.getAllAndOverride<
+      (RolEnum | string)[]
+    >(ROLES_KEY, [context.getHandler(), context.getClass()]);
 
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
@@ -36,14 +35,20 @@ export class RolesGuard implements CanActivate {
           return true;
         }
         const enumKey = RolEnum[requiredRole];
-        if (enumKey && user.rol && user.rol.trim().toUpperCase() === enumKey.toUpperCase()) {
+        if (
+          enumKey &&
+          user.rol &&
+          user.rol.trim().toUpperCase() === enumKey.toUpperCase()
+        ) {
           return true;
         }
       }
 
       // Comparar por nombre de rol en string ('ADMIN', 'LIDER', etc.)
       if (typeof requiredRole === 'string' && user.rol) {
-        return user.rol.trim().toUpperCase() === requiredRole.trim().toUpperCase();
+        return (
+          user.rol.trim().toUpperCase() === requiredRole.trim().toUpperCase()
+        );
       }
 
       return false;
@@ -58,4 +63,3 @@ export class RolesGuard implements CanActivate {
     return true;
   }
 }
-

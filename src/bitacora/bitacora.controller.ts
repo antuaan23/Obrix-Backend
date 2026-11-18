@@ -17,20 +17,19 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('bitacora')
 export class BitacoraController {
-  constructor(private readonly bitacoraService: BitacoraService) { }
+  constructor(private readonly bitacoraService: BitacoraService) {}
 
   @Get('proyecto/:uuidProyecto')
-  @ApiOperation({ summary: 'Obtener la bitácora de un proyecto con todos sus registros' })
+  @ApiOperation({
+    summary: 'Obtener la bitácora de un proyecto con todos sus registros',
+  })
   findByProyecto(@Param('uuidProyecto') uuidProyecto: string) {
     return this.bitacoraService.findByProyectoUuid(uuidProyecto);
   }
 
   @Post('registro')
   @ApiOperation({ summary: 'Agregar un registro de avance a la bitácora' })
-  agregarRegistro(
-    @Body() dto: CreateRegistroBitacoraDto,
-    @Request() req: any,
-  ) {
+  agregarRegistro(@Body() dto: CreateRegistroBitacoraDto, @Request() req: any) {
     const uuidUsuario: string = req.user.uuid;
     return this.bitacoraService.agregarRegistro(dto, uuidUsuario);
   }

@@ -7,7 +7,10 @@ export class CotizacionResumenPresupuestoDto {
   @ApiProperty({ example: 'Materiales de gasfitería' })
   nombre!: string;
 
-  @ApiProperty({ example: 250000, description: 'Monto total de la cotización en CLP' })
+  @ApiProperty({
+    example: 250000,
+    description: 'Monto total de la cotización en CLP',
+  })
   montoTotal!: number;
 }
 
@@ -26,7 +29,8 @@ export class PresupuestoCalculadoDto {
 
   @ApiProperty({
     example: 750000,
-    description: 'Presupuesto del proyecto = suma de montoTotal de todas sus cotizaciones',
+    description:
+      'Presupuesto del proyecto = suma de montoTotal de todas sus cotizaciones',
   })
   presupuesto!: number;
 

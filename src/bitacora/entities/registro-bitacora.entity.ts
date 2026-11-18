@@ -31,7 +31,11 @@ export class RegistroBitacora {
   @JoinColumn({ name: 'bitacora_id' })
   bitacora!: Bitacora;
 
-  @ManyToOne(() => Usuario, { eager: false, onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => Usuario, {
+    eager: false,
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn({ name: 'usuario_id' })
   usuario!: Usuario;
 

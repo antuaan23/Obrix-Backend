@@ -27,7 +27,7 @@ export class CotizacionService {
 
     private readonly pdfService: PdfService,
     private readonly proyectoService: ProyectoService,
-    private readonly mailService: MailService
+    private readonly mailService: MailService,
   ) {}
 
   async crearCotizacion(dto: CreateCotizacionDto): Promise<Result<Cotizacion>> {
@@ -35,20 +35,22 @@ export class CotizacionService {
       where: { uuid: dto.proyectoUuid },
       relations: {
         usuarios: {
-          rol: true
+          rol: true,
         },
       },
-     });
+    });
     if (!proyecto) {
       return Result.fallo<Cotizacion>('El proyecto especificado no existe.');
     }
 
     const liderProyecto = proyecto.usuarios?.find(
-      (u) => u.rol?.nombre === 'Lider' || u.rol?.id === RolEnum.LIDER
+      (u) => u.rol?.nombre === 'Lider' || u.rol?.id === RolEnum.LIDER,
     );
-    
-    if (!liderProyecto || !liderProyecto.email){
-      return Result.fallo<Cotizacion>('No se encontró un usuario líder asignado a este proyecto.');
+
+    if (!liderProyecto || !liderProyecto.email) {
+      return Result.fallo<Cotizacion>(
+        'No se encontró un usuario líder asignado a este proyecto.',
+      );
     }
 
     const cotizacion = new Cotizacion();
@@ -59,9 +61,13 @@ export class CotizacionService {
     let totalCotizacion = 0;
 
     for (const item of dto.items) {
-      const material = await this.materialRepo.findOneBy({ uuid: item.materialUuid });
+      const material = await this.materialRepo.findOneBy({
+        uuid: item.materialUuid,
+      });
       if (!material) {
-        return Result.fallo<Cotizacion>(`El material con UUID ${item.materialUuid} no existe.`);
+        return Result.fallo<Cotizacion>(
+          `El material con UUID ${item.materialUuid} no existe.`,
+        );
       }
 
       const detalle = new DetalleCotizacion();
@@ -92,9 +98,9 @@ export class CotizacionService {
         folioCotizacion: cotizacionGuardada.folio,
         nombreCotizacion: cotizacionGuardada.nombre,
         fechaCreacion: cotizacionGuardada.creadoEl,
-        montoCotizacion: cotizacionGuardada.montoTotal
-      }
-    })
+        montoCotizacion: cotizacionGuardada.montoTotal,
+      },
+    });
 
     // Ya NO se recalcula el presupuesto automáticamente al crear una cotización;
     // se hace de forma explícita mediante el botón del frontend.
@@ -110,13 +116,17 @@ export class CotizacionService {
     });
 
     if (!cotizacionCompleta) {
-      return Result.fallo<Cotizacion>('Error al recuperar la cotización creada.');
+      return Result.fallo<Cotizacion>(
+        'Error al recuperar la cotización creada.',
+      );
     }
 
     return Result.ok(cotizacionCompleta, 'Cotización creada exitosamente.');
   }
 
-  async obtenerPorProyectoUuid(proyectoUuid: string): Promise<Result<Cotizacion[]>> {
+  async obtenerPorProyectoUuid(
+    proyectoUuid: string,
+  ): Promise<Result<Cotizacion[]>> {
     const proyecto = await this.proyectoRepo.findOneBy({ uuid: proyectoUuid });
     if (!proyecto) {
       return Result.fallo<Cotizacion[]>('El proyecto especificado no existe.');
@@ -134,7 +144,9 @@ export class CotizacionService {
     });
 
     if (!cotizaciones || cotizaciones.length === 0) {
-      return Result.fallo<Cotizacion[]>('No se encontraron cotizaciones para el proyecto.');
+      return Result.fallo<Cotizacion[]>(
+        'No se encontraron cotizaciones para el proyecto.',
+      );
     }
 
     return Result.ok(cotizaciones, 'Cotizaciones del proyecto encontradas.');
@@ -144,7 +156,9 @@ export class CotizacionService {
    * Genera el PDF de una sola cotización (identificada por UUID).
    * Pensado para un botón en el front: GET /api/cotizacion/:uuid/pdf
    */
-  async generarPdfPorUuid(uuid: string): Promise<{ pdfBuffer: Buffer; nombreArchivo: string }> {
+  async generarPdfPorUuid(
+    uuid: string,
+  ): Promise<{ pdfBuffer: Buffer; nombreArchivo: string }> {
     const cotizacion = await this.cotizacionRepo.findOne({
       where: { uuid },
       relations: {
@@ -163,7 +177,9 @@ export class CotizacionService {
 
     const cliente = cotizacion.proyecto?.cliente;
     const clienteNombre = cliente
-      ? [cliente.nombre, cliente.ap_paterno, cliente.ap_materno].filter(Boolean).join(' ')
+      ? [cliente.nombre, cliente.ap_paterno, cliente.ap_materno]
+          .filter(Boolean)
+          .join(' ')
       : 'Sin cliente asignado';
 
     const quoteData = {
@@ -179,7 +195,9 @@ export class CotizacionService {
 
         return {
           name: det.nombre || det.material?.producto || 'Material sin nombre',
-          quantity: Number.isInteger(cantidad) ? cantidad : Number(cantidad.toFixed(2)),
+          quantity: Number.isInteger(cantidad)
+            ? cantidad
+            : Number(cantidad.toFixed(2)),
           unitPrice,
           total,
         };
@@ -209,6 +227,26 @@ export class CotizacionService {
    * Suma todas las cotizaciones de un proyecto y actualiza su presupuesto
    */
   async calcularPresupuestoProyecto(proyectoUuid: string) {
-    return await this.proyectoService.calcularYActualizarPresupuesto(proyectoUuid);
+    return await this.proyectoService.calcularYActualizarPresupuesto(
+      proyectoUuid,
+    );
+  }
+
+  /**
+   * Elimina una cotización físicamente (y sus detalles en cascade).
+   * Solo Líder o Admin.
+   */
+  async eliminar(uuid: string): Promise<Result<boolean>> {
+    const cotizacion = await this.cotizacionRepo.findOne({
+      where: { uuid },
+      relations: { detalles: true, proyecto: true },
+    });
+
+    if (!cotizacion) {
+      return Result.fallo<boolean>('Cotización no encontrada.');
+    }
+
+    await this.cotizacionRepo.remove(cotizacion);
+    return Result.ok<boolean>(true, 'Cotización eliminada correctamente.');
   }
 }

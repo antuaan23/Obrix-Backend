@@ -7,7 +7,12 @@ import {
   BadRequestException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { MailService } from './mail.service';
 import { SendMailDto } from './dto/send-mail.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -26,13 +31,13 @@ export class MailController {
   @Roles(RolEnum.ADMIN, RolEnum.LIDER)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Enviar un correo electrónico (Líderes o Admin)' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Correo enviado exitosamente.' 
+  @ApiResponse({
+    status: 200,
+    description: 'Correo enviado exitosamente.',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Error al procesar o enviar el correo.' 
+  @ApiResponse({
+    status: 400,
+    description: 'Error al procesar o enviar el correo.',
   })
   async enviarCorreo(@Body() dto: SendMailDto) {
     const res = await this.mailService.enviarCorreo(dto);

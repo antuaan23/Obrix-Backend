@@ -13,12 +13,22 @@ import {
   BadRequestException,
   NotFoundException,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
-import { ApiOperation, ApiProduces, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiProduces,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
 import { CotizacionService } from './cotizacion.service';
 import { CreateCotizacionDto } from './dto/create-cotizacion.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolEnum } from 'src/rol/rol.enum';
 
 @ApiTags('Cotizaciones')
 @ApiBearerAuth()
@@ -37,10 +47,12 @@ export class CotizacionController {
   @ApiResponse({ status: 201, description: 'Cotización creada exitosamente.' })
   @ApiResponse({
     status: 400,
-    description: 'Datos de entrada inválidos o recurso no encontrado (Proyecto/Material).',
+    description:
+      'Datos de entrada inválidos o recurso no encontrado (Proyecto/Material).',
   })
   async create(@Body() createCotizacionDto: CreateCotizacionDto) {
-    const res = await this.cotizacionService.crearCotizacion(createCotizacionDto);
+    const res =
+      await this.cotizacionService.crearCotizacion(createCotizacionDto);
 
     if (!res.exitoso) {
       throw new BadRequestException({
@@ -58,7 +70,9 @@ export class CotizacionController {
 
   @Get('proyecto/:proyectoUuid')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Obtener todas las cotizaciones asociadas a un proyecto' })
+  @ApiOperation({
+    summary: 'Obtener todas las cotizaciones asociadas a un proyecto',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lista de cotizaciones del proyecto obtenida exitosamente.',
@@ -70,7 +84,8 @@ export class CotizacionController {
   async obtenerPorProyecto(
     @Param('proyectoUuid', new ParseUUIDPipe()) proyectoUuid: string,
   ) {
-    const res = await this.cotizacionService.obtenerPorProyectoUuid(proyectoUuid);
+    const res =
+      await this.cotizacionService.obtenerPorProyectoUuid(proyectoUuid);
 
     if (!res.exitoso) {
       throw new NotFoundException({
@@ -95,14 +110,16 @@ export class CotizacionController {
   @Post('proyecto/:proyectoUuid/presupuesto')
   @Patch('proyecto/:proyectoUuid/presupuesto')
   @ApiOperation({
-    summary: 'Calcular el presupuesto del proyecto sumando todas sus cotizaciones',
+    summary:
+      'Calcular el presupuesto del proyecto sumando todas sus cotizaciones',
     description:
       'Suma el montoTotal de cada cotización del proyecto y actualiza el presupuesto del proyecto.',
   })
   async calcularPresupuesto(
     @Param('proyectoUuid', new ParseUUIDPipe()) proyectoUuid: string,
   ) {
-    const res = await this.cotizacionService.calcularPresupuestoProyecto(proyectoUuid);
+    const res =
+      await this.cotizacionService.calcularPresupuestoProyecto(proyectoUuid);
 
     if (!res.exitoso) {
       throw new NotFoundException({
@@ -135,7 +152,8 @@ export class CotizacionController {
     @Param('uuid', new ParseUUIDPipe()) uuid: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const { pdfBuffer, nombreArchivo } = await this.cotizacionService.generarPdfPorUuid(uuid);
+    const { pdfBuffer, nombreArchivo } =
+      await this.cotizacionService.generarPdfPorUuid(uuid);
 
     res.set({
       'Content-Type': 'application/pdf',
@@ -144,5 +162,36 @@ export class CotizacionController {
     });
 
     return new StreamableFile(pdfBuffer);
+  }
+
+  @Delete(':uuid')
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN, RolEnum.LIDER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Eliminar una cotización (Líder o Admin)',
+    description:
+      'Elimina la cotización y todos sus detalles (cascade). Solo Líderes y Administradores.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cotización eliminada correctamente.',
+  })
+  @ApiResponse({ status: 403, description: 'No tienes permisos suficientes.' })
+  @ApiResponse({ status: 404, description: 'Cotización no encontrada.' })
+  async eliminar(@Param('uuid', new ParseUUIDPipe()) uuid: string) {
+    const res = await this.cotizacionService.eliminar(uuid);
+
+    if (!res.exitoso) {
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: res.descripcion,
+      });
+    }
+
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+    };
   }
 }

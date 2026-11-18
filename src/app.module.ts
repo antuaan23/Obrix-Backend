@@ -14,6 +14,7 @@ import { AvanceModule } from './avance/avance.module';
 import { BitacoraModule } from './bitacora/bitacora.module';
 import { PlanModule } from './plan/plan.module';
 import { SuscripcionModule } from './suscripcion/suscripcion.module';
+import { WebpayModule } from './webpay/webpay.module';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { SuscripcionModule } from './suscripcion/suscripcion.module';
             ? { rejectUnauthorized: false }
             : false,
         autoLoadEntities: true,
-        synchronize: true, 
+        synchronize: true,
       }),
     }),
     AuthModule,
@@ -50,6 +51,7 @@ import { SuscripcionModule } from './suscripcion/suscripcion.module';
     BitacoraModule,
     PlanModule,
     SuscripcionModule,
+    WebpayModule,
   ],
 })
 export class AppModule {}

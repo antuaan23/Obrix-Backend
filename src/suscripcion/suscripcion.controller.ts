@@ -10,18 +10,20 @@ import { CreateSuscripcionDto } from './dto/create-suscripcion.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('suscripcion')
 export class SuscripcionController {
+  constructor(private readonly suscripcionService: SuscripcionService) {}
 
-    constructor(private readonly suscripcionService: SuscripcionService) { }
+  @Get('resumen')
+  @ApiOperation({ summary: 'Ver uso actual del plan y cobro estimado del mes' })
+  calcularResumen(@GetUser('userId') usuarioId: number) {
+    return this.suscripcionService.calcularResumen(usuarioId);
+  }
 
-    @Get('resumen')
-    @ApiOperation({ summary: 'Ver uso actual del plan y cobro estimado del mes' })
-    calcularResumen(@GetUser('userId') usuarioId: number) {
-        return this.suscripcionService.calcularResumen(usuarioId);
-    }
-
-    @Patch('cambiar-plan')
-    @ApiOperation({ summary: 'Cambiar el plan activo del usuario autenticado' })
-    cambiarPlan(@GetUser('userId') usuarioId: number, @Body() dto: CreateSuscripcionDto) {
-        return this.suscripcionService.cambiarPlan(usuarioId, dto.planId);
-    }
+  @Patch('cambiar-plan')
+  @ApiOperation({ summary: 'Cambiar el plan activo del usuario autenticado' })
+  cambiarPlan(
+    @GetUser('userId') usuarioId: number,
+    @Body() dto: CreateSuscripcionDto,
+  ) {
+    return this.suscripcionService.cambiarPlan(usuarioId, dto.planId);
+  }
 }

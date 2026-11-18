@@ -12,7 +12,12 @@ import {
   ParseUUIDPipe,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
@@ -20,13 +25,17 @@ import { ProyectoResponseDto } from './dto/proyecto-response.dto';
 import { PresupuestoCalculadoDto } from './dto/presupuesto-calculado.dto';
 import { AgregarUsuarioProyectoDto } from './dto/agregar-usuario-proyecto.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolEnum } from 'src/rol/rol.enum';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
 
 @ApiTags('Proyectos')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('proyectos')
 export class ProyectoController {
-  constructor(private readonly proyectoService: ProyectoService) {}
+  constructor(private readonly proyectoService: ProyectoService) { }
 
   @Get()
   @ApiOperation({ summary: 'Obtener la lista completa de proyectos' })
@@ -102,7 +111,10 @@ export class ProyectoController {
   async crear(@Body() dto: CreateProyectoDto) {
     const res = await this.proyectoService.create(dto);
     if (!res.exitoso) {
-      throw new BadRequestException({ exitoso: false, descripcion: res.descripcion });
+      throw new BadRequestException({
+        exitoso: false,
+        descripcion: res.descripcion,
+      });
     }
     return {
       exitoso: res.exitoso,
@@ -115,7 +127,10 @@ export class ProyectoController {
   async update(@Param('uuid') uuid: string, @Body() dto: UpdateProyectoDto) {
     const res = await this.proyectoService.update(uuid, dto);
     if (!res.exitoso) {
-      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: res.descripcion,
+      });
     }
     return {
       exitoso: res.exitoso,
@@ -123,45 +138,26 @@ export class ProyectoController {
       respuesta: res.resultado,
     };
   }
+  // ─── Borrado lógico ───────────────────────────────────────────────────────
   @Delete(':uuid')
-  @ApiOperation({ summary: 'Borrado lógico: Desactivar un proyecto por UUID' })
-  @ApiResponse({ status: 200, description: 'Proyecto desactivado exitosamente.' })
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN, RolEnum.LIDER)
+  @ApiOperation({
+    summary: 'Borrado lógico: desactivar un proyecto (Admin o Líder)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Proyecto desactivado exitosamente.',
+    type: ProyectoResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Proyecto no encontrado.' })
   async remove(@Param('uuid') uuid: string) {
     const res = await this.proyectoService.remove(uuid);
     if (!res.exitoso) {
-      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
-    }
-    return {
-      exitoso: res.exitoso,
-      descripcion: res.descripcion,
-      respuesta: res.resultado,
-    };
-  }
-  @Patch(':uuid/estado')
-  @ApiOperation({ summary: 'Activar o desactivar un proyecto (Borrado/Reactivación lógica)' })
-  @ApiResponse({ status: 200, description: 'Estado del proyecto actualizado.', type: ProyectoResponseDto })
-  async cambiarEstado(
-    @Param('uuid') uuid: string,
-    @Body() body: { activo: boolean },
-  ) {
-    const res = await this.proyectoService.cambiarEstado(uuid, body.activo);
-    if (!res.exitoso) {
-      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
-    }
-    return {
-      exitoso: res.exitoso,
-      descripcion: res.descripcion,
-      respuesta: res.resultado,
-    };
-  }
-
-  @Patch(':uuid/activar')
-  @ApiOperation({ summary: 'Activar un proyecto' })
-  async activar(@Param('uuid') uuid: string) {
-    const res = await this.proyectoService.cambiarEstado(uuid, true);
-    if (!res.exitoso) {
-      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: res.descripcion,
+      });
     }
     return {
       exitoso: res.exitoso,
@@ -171,11 +167,78 @@ export class ProyectoController {
   }
 
   @Patch(':uuid/desactivar')
-  @ApiOperation({ summary: 'Desactivar un proyecto' })
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN, RolEnum.LIDER)
+  @ApiOperation({
+    summary: 'Borrado lógico: desactivar un proyecto (Admin o Líder)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Proyecto desactivado exitosamente.',
+    type: ProyectoResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Proyecto no encontrado.' })
   async desactivar(@Param('uuid') uuid: string) {
     const res = await this.proyectoService.cambiarEstado(uuid, false);
     if (!res.exitoso) {
-      throw new NotFoundException({ exitoso: false, descripcion: res.descripcion });
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: res.descripcion,
+      });
+    }
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
+  }
+
+  @Patch(':uuid/activar')
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN, RolEnum.LIDER)
+  @ApiOperation({ summary: 'Reactivar un proyecto (Admin o Líder)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Proyecto reactivado exitosamente.',
+    type: ProyectoResponseDto,
+  })
+  @ApiResponse({ status: 404, description: 'Proyecto no encontrado.' })
+  async activar(@Param('uuid') uuid: string) {
+    const res = await this.proyectoService.cambiarEstado(uuid, true);
+    if (!res.exitoso) {
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: res.descripcion,
+      });
+    }
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
+  }
+
+  @Patch(':uuid/estado')
+  @UseGuards(RolesGuard)
+  @Roles(RolEnum.ADMIN)
+  @ApiOperation({
+    summary: 'Toggle activo/inactivo de un proyecto (solo Admin)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Estado del proyecto actualizado.',
+    type: ProyectoResponseDto,
+  })
+  async cambiarEstado(
+    @Param('uuid') uuid: string,
+    @Body() body: { activo: boolean },
+  ) {
+    const res = await this.proyectoService.cambiarEstado(uuid, body.activo);
+    if (!res.exitoso) {
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: res.descripcion,
+      });
     }
     return {
       exitoso: res.exitoso,
@@ -185,9 +248,13 @@ export class ProyectoController {
   }
 
   @Get(':uuid/presupuesto')
-  @ApiOperation({ summary: 'Obtener el estado del presupuesto y total de gastos de un proyecto por UUID' })
+  @ApiOperation({
+    summary:
+      'Obtener el estado del presupuesto y total de gastos de un proyecto por UUID',
+  })
   async obtenerPresupuesto(@Param('uuid') uuid: string) {
-    const res = await this.proyectoService.obtenerPresupuestoConGastosPorUuid(uuid);
+    const res =
+      await this.proyectoService.obtenerPresupuestoConGastosPorUuid(uuid);
 
     if (!res.exitoso) {
       throw new NotFoundException({
@@ -239,9 +306,15 @@ export class ProyectoController {
     @Param('uuid') uuidProyecto: string,
     @Body() dto: AgregarUsuarioProyectoDto,
   ) {
-    const res = await this.proyectoService.agregarUsuarioAProyecto(uuidProyecto, dto.uuidUsuario);
+    const res = await this.proyectoService.agregarUsuarioAProyecto(
+      uuidProyecto,
+      dto.uuidUsuario,
+    );
     if (!res.exitoso) {
-      throw new BadRequestException({ exitoso: false, descripcion: res.descripcion });
+      throw new BadRequestException({
+        exitoso: false,
+        descripcion: res.descripcion,
+      });
     }
     return {
       exitoso: res.exitoso,

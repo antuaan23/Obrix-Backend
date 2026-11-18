@@ -37,7 +37,9 @@ export class ProyectoService {
     });
 
     if (!usuario) {
-      return Result.fallo<ProyectoResponseDto>('El usuario especificado no existe.');
+      return Result.fallo<ProyectoResponseDto>(
+        'El usuario especificado no existe.',
+      );
     }
 
     // 2. Buscar si el cliente ya existe por RUT, si no, crearlo
@@ -86,7 +88,9 @@ export class ProyectoService {
     });
 
     if (!proyectoCompleto) {
-      return Result.fallo<ProyectoResponseDto>('Error al recuperar el proyecto creado.');
+      return Result.fallo<ProyectoResponseDto>(
+        'Error al recuperar el proyecto creado.',
+      );
     }
 
     const respuestaDto = ProyectoResponseDto.fromEntity(proyectoCompleto);
@@ -110,7 +114,9 @@ export class ProyectoService {
     return Result.ok(respuesta, 'Lista de proyectos obtenida correctamente.');
   }
 
-  async findByUsuarioUuid(uuidUsuario: string): Promise<Result<ProyectoResponseDto[]>> {
+  async findByUsuarioUuid(
+    uuidUsuario: string,
+  ): Promise<Result<ProyectoResponseDto[]>> {
     const proyectos = await this.proyectoRepository
       .createQueryBuilder('proyecto')
       .leftJoinAndSelect('proyecto.cliente', 'cliente')
@@ -131,14 +137,20 @@ export class ProyectoService {
       .getMany();
 
     if (!proyectos || proyectos.length === 0) {
-      return Result.fallo<ProyectoResponseDto[]>('No se encontraron proyectos para el usuario.');
+      return Result.fallo<ProyectoResponseDto[]>(
+        'No se encontraron proyectos para el usuario.',
+      );
     }
 
-    const proyectosDto = proyectos.map((proyecto) => ProyectoResponseDto.fromEntity(proyecto));
+    const proyectosDto = proyectos.map((proyecto) =>
+      ProyectoResponseDto.fromEntity(proyecto),
+    );
     return Result.ok(proyectosDto, 'Proyectos del usuario encontrados.');
   }
 
-  async findOneByUuid(uuidProyecto: string): Promise<Result<ProyectoResponseDto>> {
+  async findOneByUuid(
+    uuidProyecto: string,
+  ): Promise<Result<ProyectoResponseDto>> {
     const proyecto = await this.proyectoRepository.findOne({
       where: {
         uuid: uuidProyecto,
@@ -155,10 +167,16 @@ export class ProyectoService {
       return Result.fallo<ProyectoResponseDto>('Proyecto no encontrado.');
     }
 
-    return Result.ok(ProyectoResponseDto.fromEntity(proyecto), 'Proyecto encontrado.');
+    return Result.ok(
+      ProyectoResponseDto.fromEntity(proyecto),
+      'Proyecto encontrado.',
+    );
   }
 
-  async update(uuid: string, dto: UpdateProyectoDto): Promise<Result<ProyectoResponseDto>> {
+  async update(
+    uuid: string,
+    dto: UpdateProyectoDto,
+  ): Promise<Result<ProyectoResponseDto>> {
     const proyecto = await this.proyectoRepository.findOne({
       where: { uuid },
       relations: {
@@ -177,44 +195,26 @@ export class ProyectoService {
     if (dto.servicio) proyecto.servicio = dto.servicio;
 
     const actualizado = await this.proyectoRepository.save(proyecto);
-    return Result.ok(ProyectoResponseDto.fromEntity(actualizado), 'Proyecto actualizado exitosamente.');
+    return Result.ok(
+      ProyectoResponseDto.fromEntity(actualizado),
+      'Proyecto actualizado exitosamente.',
+    );
   }
 
   /**
-   * Elimina el proyecto físicamente junto a su cliente asociado.
+   * Borrado lógico: desactiva el proyecto (activo = false).
    */
-  async remove(uuid: string): Promise<Result<boolean>> {
-    const proyecto = await this.proyectoRepository.findOne({
-      where: { uuid },
-      relations: { cliente: true },
-    });
-
-    if (!proyecto) {
-      return Result.fallo<boolean>('Proyecto no encontrado.');
-    }
-
-    const clienteId = proyecto.cliente?.id;
-
-    // Eliminar el proyecto físicamente (las relaciones con cascade se limpian solas)
-    await this.proyectoRepository.remove(proyecto);
-
-    // Eliminar el cliente asociado solo si ningún otro proyecto lo utiliza
-    if (clienteId) {
-      const otrosProyectos = await this.proyectoRepository.count({
-        where: { cliente: { id: clienteId } },
-      });
-      if (otrosProyectos === 0) {
-        await this.clienteRepository.delete(clienteId);
-      }
-    }
-
-    return Result.ok(true, 'Proyecto y cliente eliminados exitosamente.');
+  async remove(uuid: string): Promise<Result<ProyectoResponseDto>> {
+    return this.cambiarEstado(uuid, false);
   }
 
   /**
    * Permite activar o desactivar un proyecto explícitamente (Borrado / reactivación lógica)
    */
-  async cambiarEstado(uuid: string, activo: boolean): Promise<Result<ProyectoResponseDto>> {
+  async cambiarEstado(
+    uuid: string,
+    activo: boolean,
+  ): Promise<Result<ProyectoResponseDto>> {
     const proyecto = await this.proyectoRepository.findOne({
       where: { uuid },
       relations: { cliente: true, usuarios: { rol: true } },
@@ -229,7 +229,7 @@ export class ProyectoService {
 
     return Result.ok(
       ProyectoResponseDto.fromEntity(actualizado),
-      `Proyecto ${activo ? 'activado' : 'desactivado'} exitosamente.`
+      `Proyecto ${activo ? 'activado' : 'desactivado'} exitosamente.`,
     );
   }
 
@@ -271,7 +271,10 @@ export class ProyectoService {
       diferencia: excedido ? diferencia : 0,
     };
 
-    return Result.ok(datosPresupuesto, 'Presupuesto y gastos calculados correctamente.');
+    return Result.ok(
+      datosPresupuesto,
+      'Presupuesto y gastos calculados correctamente.',
+    );
   }
 
   async calcularYActualizarPresupuesto(
@@ -289,7 +292,10 @@ export class ProyectoService {
     }
 
     const cotizaciones = proyecto.cotizaciones ?? [];
-    const presupuestoTotal = cotizaciones.reduce((acc, cot) => acc + Number(cot.montoTotal || 0), 0);
+    const presupuestoTotal = cotizaciones.reduce(
+      (acc, cot) => acc + Number(cot.montoTotal || 0),
+      0,
+    );
 
     proyecto.presupuesto = presupuestoTotal;
     await this.proyectoRepository.save(proyecto);
@@ -318,14 +324,22 @@ export class ProyectoService {
     uuidProyecto: string,
     uuidUsuario: string,
   ): Promise<Result<ProyectoResponseDto>> {
-    const proyecto = await this.proyectoRepository.findOne({ where: { uuid: uuidProyecto } });
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { uuid: uuidProyecto },
+    });
     if (!proyecto) {
-      return Result.fallo<ProyectoResponseDto>(`Proyecto con UUID ${uuidProyecto} no encontrado.`);
+      return Result.fallo<ProyectoResponseDto>(
+        `Proyecto con UUID ${uuidProyecto} no encontrado.`,
+      );
     }
 
-    const usuario = await this.usuarioRepository.findOne({ where: { uuid: uuidUsuario } });
+    const usuario = await this.usuarioRepository.findOne({
+      where: { uuid: uuidUsuario },
+    });
     if (!usuario) {
-      return Result.fallo<ProyectoResponseDto>(`Usuario con UUID ${uuidUsuario} no encontrado.`);
+      return Result.fallo<ProyectoResponseDto>(
+        `Usuario con UUID ${uuidUsuario} no encontrado.`,
+      );
     }
 
     const existeRelacion = await this.proyectoRepository
@@ -336,7 +350,9 @@ export class ProyectoService {
 
     const yaEstaAsociado = existeRelacion.some((u) => u.id === usuario.id);
     if (yaEstaAsociado) {
-      return Result.fallo<ProyectoResponseDto>('El usuario ya está asociado al proyecto.');
+      return Result.fallo<ProyectoResponseDto>(
+        'El usuario ya está asociado al proyecto.',
+      );
     }
 
     await this.proyectoRepository

@@ -1,18 +1,26 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  UseGuards, 
-  UseInterceptors, 
-  UploadedFile, 
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
   BadRequestException,
   Get,
   Param,
-  NotFoundException
+  NotFoundException,
+  Delete,
+  ForbiddenException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 import { GastoService } from './gasto.service';
 import { CreateGastoDto } from './dto/create-gasto.dto';
@@ -31,7 +39,10 @@ export class GastoController {
   @ApiOperation({ summary: 'Registrar un nuevo gasto con comprobante' })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 201, description: 'Gasto registrado exitosamente.' })
-  @ApiResponse({ status: 400, description: 'Error al registrar el gasto o datos inválidos.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Error al registrar el gasto o datos inválidos.',
+  })
   @UseInterceptors(
     FileInterceptor('imagen', {
       storage: memoryStorage(),
@@ -55,14 +66,19 @@ export class GastoController {
     return {
       exitoso: result.exitoso,
       descripcion: result.descripcion,
-      respuesta: result.resultado ? GastoResponseDto.fromEntity(result.resultado) : null,
+      respuesta: result.resultado
+        ? GastoResponseDto.fromEntity(result.resultado)
+        : null,
     };
   }
 
   @Get('proyecto/:proyectoUuid')
   @ApiOperation({ summary: 'Obtener todos los gastos asociados a un proyecto' })
   @ApiResponse({ status: 200, description: 'Gastos obtenidos exitosamente.' })
-  @ApiResponse({ status: 404, description: 'Proyecto no encontrado o sin gastos.' })
+  @ApiResponse({
+    status: 404,
+    description: 'Proyecto no encontrado o sin gastos.',
+  })
   async findByProyectoUuid(@Param('proyectoUuid') proyectoUuid: string) {
     const result = await this.gastoService.findByProyectoUuid(proyectoUuid);
 
@@ -77,6 +93,44 @@ export class GastoController {
       exitoso: result.exitoso,
       descripcion: result.descripcion,
       respuesta: result.resultado?.map(GastoResponseDto.fromEntity),
+    };
+  }
+
+  @Delete(':uuid')
+  @ApiOperation({
+    summary: 'Eliminar un gasto (solo el creador o un Admin)',
+    description:
+      'Elimina el gasto y su comprobante del storage. Solo puede ejecutarlo el usuario que creó el gasto o un Administrador.',
+  })
+  @ApiResponse({ status: 200, description: 'Gasto eliminado correctamente.' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tienes permiso para eliminar este gasto.',
+  })
+  @ApiResponse({ status: 404, description: 'Gasto no encontrado.' })
+  async eliminar(
+    @Param('uuid') uuid: string,
+    @GetUser('uuid') usuarioUuid: string,
+    @GetUser('rolId') rolId: number,
+  ) {
+    const result = await this.gastoService.eliminar(uuid, usuarioUuid, rolId);
+
+    if (!result.exitoso) {
+      if (result.descripcion.includes('permiso')) {
+        throw new ForbiddenException({
+          exitoso: false,
+          descripcion: result.descripcion,
+        });
+      }
+      throw new NotFoundException({
+        exitoso: false,
+        descripcion: result.descripcion,
+      });
+    }
+
+    return {
+      exitoso: result.exitoso,
+      descripcion: result.descripcion,
     };
   }
 }

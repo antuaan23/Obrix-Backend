@@ -12,7 +12,13 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 import { AvanceService } from './avance.service';
 import { CreateAvanceDto } from './dto/create-avance.dto';
@@ -31,7 +37,10 @@ export class AvanceController {
   @ApiOperation({ summary: 'Registrar un avance de dinero a un trabajador' })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 201, description: 'Avance registrado exitosamente.' })
-  @ApiResponse({ status: 400, description: 'Error al registrar el avance o datos inválidos.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Error al registrar el avance o datos inválidos.',
+  })
   @UseInterceptors(
     FileInterceptor('comprobante', {
       storage: memoryStorage(),
@@ -55,12 +64,16 @@ export class AvanceController {
     return {
       exitoso: result.exitoso,
       descripcion: result.descripcion,
-      respuesta: result.resultado ? AvanceResponseDto.fromEntity(result.resultado) : null,
+      respuesta: result.resultado
+        ? AvanceResponseDto.fromEntity(result.resultado)
+        : null,
     };
   }
 
   @Get('mis-avances')
-  @ApiOperation({ summary: 'Obtener todos los avances registrados por el líder autenticado' })
+  @ApiOperation({
+    summary: 'Obtener todos los avances registrados por el líder autenticado',
+  })
   @ApiResponse({ status: 200, description: 'Avances obtenidos exitosamente.' })
   async findByLider(@GetUser('uuid') liderUuid: string) {
     const result = await this.avanceService.findByLider(liderUuid);
@@ -80,8 +93,13 @@ export class AvanceController {
   }
 
   @Get('trabajador/:uuid')
-  @ApiOperation({ summary: 'Obtener todos los avances recibidos por un trabajador' })
-  @ApiResponse({ status: 200, description: 'Avances del trabajador obtenidos exitosamente.' })
+  @ApiOperation({
+    summary: 'Obtener todos los avances recibidos por un trabajador',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Avances del trabajador obtenidos exitosamente.',
+  })
   async findByTrabajador(@Param('uuid') trabajadorUuid: string) {
     const result = await this.avanceService.findByTrabajador(trabajadorUuid);
 

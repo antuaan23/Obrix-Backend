@@ -30,10 +30,16 @@ export class ClienteService {
       return Result.fallo<ClienteResponseDto>('Cliente no encontrado.');
     }
 
-    return Result.ok(ClienteResponseDto.fromEntity(cliente), 'Cliente encontrado.');
+    return Result.ok(
+      ClienteResponseDto.fromEntity(cliente),
+      'Cliente encontrado.',
+    );
   }
 
-  async update(uuid: string, dto: UpdateClienteDto): Promise<Result<ClienteResponseDto>> {
+  async update(
+    uuid: string,
+    dto: UpdateClienteDto,
+  ): Promise<Result<ClienteResponseDto>> {
     const cliente = await this.clienteRepository.findOne({ where: { uuid } });
     if (!cliente) {
       return Result.fallo<ClienteResponseDto>('Cliente no encontrado.');
@@ -46,6 +52,9 @@ export class ClienteService {
     if (dto.telefono) cliente.telefono = dto.telefono;
 
     const actualizado = await this.clienteRepository.save(cliente);
-    return Result.ok(ClienteResponseDto.fromEntity(actualizado), 'Cliente actualizado correctamente.');
+    return Result.ok(
+      ClienteResponseDto.fromEntity(actualizado),
+      'Cliente actualizado correctamente.',
+    );
   }
 }

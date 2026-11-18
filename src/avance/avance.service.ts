@@ -6,7 +6,10 @@ import { Avance } from './entities/avance.entity';
 import { Usuario } from '../usuario/entities/usuario.entity';
 import { CreateAvanceDto } from './dto/create-avance.dto';
 import { Result } from '../common/interfaces/result';
-import { StorageService, ArchivoSubido } from '../common/services/storage.service';
+import {
+  StorageService,
+  ArchivoSubido,
+} from '../common/services/storage.service';
 
 @Injectable()
 export class AvanceService {
@@ -55,7 +58,9 @@ export class AvanceService {
       try {
         comprobanteUrl = await this.storageService.subirBoleta(file, 'avances');
       } catch {
-        return Result.fallo<Avance>('No se pudo guardar el comprobante del avance.');
+        return Result.fallo<Avance>(
+          'No se pudo guardar el comprobante del avance.',
+        );
       }
     }
 
@@ -84,7 +89,9 @@ export class AvanceService {
     const avancesFirmados = await Promise.all(
       avances.map(async (a) => {
         if (a.comprobanteUrl) {
-          a.comprobanteUrl = await this.storageService.obtenerUrlFirmada(a.comprobanteUrl);
+          a.comprobanteUrl = await this.storageService.obtenerUrlFirmada(
+            a.comprobanteUrl,
+          );
         }
         return a;
       }),
@@ -104,12 +111,17 @@ export class AvanceService {
     const avancesFirmados = await Promise.all(
       avances.map(async (a) => {
         if (a.comprobanteUrl) {
-          a.comprobanteUrl = await this.storageService.obtenerUrlFirmada(a.comprobanteUrl);
+          a.comprobanteUrl = await this.storageService.obtenerUrlFirmada(
+            a.comprobanteUrl,
+          );
         }
         return a;
       }),
     );
 
-    return Result.ok<Avance[]>(avancesFirmados, 'Avances del trabajador obtenidos.');
+    return Result.ok<Avance[]>(
+      avancesFirmados,
+      'Avances del trabajador obtenidos.',
+    );
   }
 }

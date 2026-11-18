@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Proyecto } from "../entities/proyecto.entity";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Proyecto } from '../entities/proyecto.entity';
 
 export class ClienteResumenDto {
   @ApiProperty({ example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' })
@@ -106,7 +106,7 @@ export class ProyectoResponseDto {
             ap_paterno: proyecto.cliente.ap_paterno,
             ap_materno: proyecto.cliente.ap_materno,
             email: proyecto.cliente.email,
-            telefono: proyecto.cliente.telefono
+            telefono: proyecto.cliente.telefono,
           }
         : undefined,
       usuarios:

@@ -18,4 +18,3 @@ import { BitacoraModule } from 'src/bitacora/bitacora.module';
   exports: [ProyectoService],
 })
 export class ProyectoModule {}
-

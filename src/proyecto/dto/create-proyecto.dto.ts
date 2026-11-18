@@ -1,20 +1,20 @@
-import { 
-  IsString, 
-  IsNotEmpty, 
-  IsUUID, 
-  IsOptional, 
-  IsNumber, 
+import {
+  IsString,
+  IsNotEmpty,
+  IsUUID,
+  IsOptional,
+  IsNumber,
   IsDateString,
-  ValidateNested 
-} from "class-validator";
-import { Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
-import { CreateClienteDto } from "src/cliente/dto/create-cliente.dto";
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { CreateClienteDto } from 'src/cliente/dto/create-cliente.dto';
 
 export class CreateProyectoDto {
   @ApiProperty({
     description: 'UUID del usuario asignado',
-    example: '123e4567-e89b-12d3-a456-426614174000'
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @IsUUID()
   @IsNotEmpty()
@@ -22,7 +22,7 @@ export class CreateProyectoDto {
 
   @ApiProperty({
     description: 'Nombre del proyecto',
-    example: 'Remodelación Oficinas'
+    example: 'Remodelación Oficinas',
   })
   @IsString()
   @IsNotEmpty()
@@ -30,7 +30,7 @@ export class CreateProyectoDto {
 
   @ApiProperty({
     description: 'Servicio prestado en el proyecto',
-    example: 'Gasfitería'
+    example: 'Gasfitería',
   })
   @IsString()
   @IsNotEmpty()
@@ -38,7 +38,7 @@ export class CreateProyectoDto {
 
   @ApiProperty({
     description: 'Fecha de inicio del proyecto',
-    example: '2025-01-15'
+    example: '2025-01-15',
   })
   @IsDateString()
   @IsNotEmpty()
@@ -46,7 +46,7 @@ export class CreateProyectoDto {
 
   @ApiProperty({
     description: 'Fecha estimada de término del proyecto',
-    example: '2025-06-30'
+    example: '2025-06-30',
   })
   @IsDateString()
   @IsNotEmpty()
@@ -60,5 +60,4 @@ export class CreateProyectoDto {
   @Type(() => CreateClienteDto) // Convierte el JSON plano a una instancia de clase
   @IsNotEmpty()
   cliente!: CreateClienteDto;
-
 }

@@ -19,12 +19,15 @@ import { CambiarPassDto } from './dto/cambiar-pass.dto';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente.' })
-  @ApiResponse({ status: 400, description: 'El correo electrónico ya se encuentra registrado.' })
+  @ApiResponse({
+    status: 400,
+    description: 'El correo electrónico ya se encuentra registrado.',
+  })
   async register(@Body() registerDto: RegisterDto) {
     const res = await this.authService.registro(registerDto);
 
@@ -46,7 +49,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Iniciar sesión y obtener token JWT' })
   @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso.' })
-  @ApiResponse({ status: 401, description: 'Correo o contraseña incorrectos..' })
+  @ApiResponse({
+    status: 401,
+    description: 'Correo o contraseña incorrectos..',
+  })
   async login(@Body() loginDto: LoginDto) {
     const res = await this.authService.login(loginDto);
 
@@ -73,10 +79,17 @@ export class AuthController {
     const res = await this.authService.solicitarRecuperacion(dto);
 
     if (!res.exitoso) {
-      throw new BadRequestException({ exitoso: res.exitoso, descripcion: res.descripcion });
+      throw new BadRequestException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
     }
 
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 
   // PASO 2: Verificar si el código ingresado es correcto
@@ -88,27 +101,49 @@ export class AuthController {
     const res = await this.authService.verificarCodigo(dto);
 
     if (!res.exitoso) {
-      throw new BadRequestException({ exitoso: res.exitoso, descripcion: res.descripcion });
+      throw new BadRequestException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
     }
 
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 
   // PASO 3: Cambiar la contraseña de forma definitiva
   @Post('cambiar-password')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Cambiar contraseña con reset_token (en Bearer o body)' })
-  @ApiResponse({ status: 200, description: 'Contraseña cambiada exitosamente.' })
+  @ApiOperation({
+    summary: 'Cambiar contraseña con reset_token (en Bearer o body)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña cambiada exitosamente.',
+  })
   async cambiarPassword(
     @Body() dto: CambiarPassDto,
     @Headers('authorization') authHeader?: string,
   ) {
-    const res = await this.authService.cambiarPasswordConCodigo(dto, authHeader);
+    const res = await this.authService.cambiarPasswordConCodigo(
+      dto,
+      authHeader,
+    );
 
     if (!res.exitoso) {
-      throw new BadRequestException({ exitoso: res.exitoso, descripcion: res.descripcion });
+      throw new BadRequestException({
+        exitoso: res.exitoso,
+        descripcion: res.descripcion,
+      });
     }
 
-    return { exitoso: res.exitoso, descripcion: res.descripcion, respuesta: res.resultado };
+    return {
+      exitoso: res.exitoso,
+      descripcion: res.descripcion,
+      respuesta: res.resultado,
+    };
   }
 }

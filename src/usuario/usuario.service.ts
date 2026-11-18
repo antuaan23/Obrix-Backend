@@ -88,7 +88,10 @@ export class UsuarioService {
   /**
    * Actualizar únicamente correo electrónico y/o número telefónico
    */
-  async update(uuid: string, dto: UpdateUsuarioDto): Promise<Result<UsuarioDto>> {
+  async update(
+    uuid: string,
+    dto: UpdateUsuarioDto,
+  ): Promise<Result<UsuarioDto>> {
     const usuario = await this.usuarioRepository.findOne({
       where: { uuid },
       relations: {
@@ -109,7 +112,9 @@ export class UsuarioService {
       });
 
       if (emailExistente && emailExistente.uuid !== usuario.uuid) {
-        return Result.fallo<UsuarioDto>('El correo electrónico ya se encuentra registrado por otro usuario.');
+        return Result.fallo<UsuarioDto>(
+          'El correo electrónico ya se encuentra registrado por otro usuario.',
+        );
       }
       usuario.email = dto.email.toLowerCase();
     }
@@ -126,8 +131,12 @@ export class UsuarioService {
     );
   }
 
-  async crearTrabajador(liderId: number, dto: CreateTrabajadorDto): Promise<Result<Omit<Usuario, 'password'>>> {
-    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } = dto;
+  async crearTrabajador(
+    liderId: number,
+    dto: CreateTrabajadorDto,
+  ): Promise<Result<Omit<Usuario, 'password'>>> {
+    const { rut, nombre, ap_paterno, ap_materno, email, password, telefono } =
+      dto;
 
     const usuarioExistente = await this.usuarioRepository.findOne({
       where: [{ email }, { rut }],
@@ -151,7 +160,7 @@ export class UsuarioService {
       email,
       password: hashedPassword,
       telefono,
-      rol: { id: RolEnum.TRABAJADOR } as any,
+      rol: { id: RolEnum.TRABAJADOR },
       liderId: liderId,
       activo: true,
     });
@@ -162,7 +171,9 @@ export class UsuarioService {
     return Result.ok(usuarioSinPassword, 'Trabajador registrado exitosamente.');
   }
 
-  async obtenerTrabajadoresPorLider(liderId: number): Promise<Result<UsuarioDto[]>> {
+  async obtenerTrabajadoresPorLider(
+    liderId: number,
+  ): Promise<Result<UsuarioDto[]>> {
     const trabajadores = await this.usuarioRepository.find({
       where: { liderId },
       relations: { rol: true, suscripcion: { plan: true } },
@@ -174,13 +185,22 @@ export class UsuarioService {
   }
 
   /**
-   * Borrado lógico: Desactiva el usuario en lugar de eliminarlo físicamente
+   * Borrado lógico: Desactiva el usuario en lugar de eliminarlo físicamente.
+   * Si se pasa liderId (Líder autenticado), valida que el usuario a desactivar
+   * sea su trabajador. Si liderId es undefined (Admin), puede desactivar a cualquiera.
    */
-  async remove(uuid: string): Promise<Result<boolean>> {
+  async remove(uuid: string, liderId?: number): Promise<Result<boolean>> {
     const usuario = await this.usuarioRepository.findOne({ where: { uuid } });
 
     if (!usuario) {
       return Result.fallo<boolean>('Usuario no encontrado.');
+    }
+
+    // Si viene un liderId, el trabajador debe pertenecer a ese líder
+    if (liderId !== undefined && usuario.liderId !== liderId) {
+      return Result.fallo<boolean>(
+        'No tienes permiso para desactivar este usuario.',
+      );
     }
 
     usuario.activo = false;
@@ -191,7 +211,10 @@ export class UsuarioService {
   /**
    * Cambiar estado activo/inactivo (Borrado / Reactivación lógica)
    */
-  async cambiarEstado(uuid: string, activo: boolean): Promise<Result<UsuarioDto>> {
+  async cambiarEstado(
+    uuid: string,
+    activo: boolean,
+  ): Promise<Result<UsuarioDto>> {
     const usuario = await this.usuarioRepository.findOne({ where: { uuid } });
 
     if (!usuario) {

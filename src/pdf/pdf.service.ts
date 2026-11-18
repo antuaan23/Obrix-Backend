@@ -13,7 +13,10 @@ export class PdfService {
       return await this.buildCotizacionDocument(data);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new InternalServerErrorException('Error al generar el PDF', message);
+      throw new InternalServerErrorException(
+        'Error al generar el PDF',
+        message,
+      );
     }
   }
 
@@ -41,23 +44,60 @@ export class PdfService {
         total: { x: left + contentWidth * 0.79, w: contentWidth * 0.21 },
       };
 
-      doc.fillColor(ink).font('Helvetica-Bold').fontSize(20).text('OBRIX', left, 48);
-      doc.font('Helvetica').fontSize(10).fillColor(muted).text('Cotización de obra', left, 72);
+      doc
+        .fillColor(ink)
+        .font('Helvetica-Bold')
+        .fontSize(20)
+        .text('OBRIX', left, 48);
+      doc
+        .font('Helvetica')
+        .fontSize(10)
+        .fillColor(muted)
+        .text('Cotización de obra', left, 72);
 
       doc.font('Helvetica').fontSize(10).fillColor(ink);
-      doc.text(`Documento: ${data.codigo}`, left, 48, { align: 'right', width: contentWidth });
+      doc.text(`Documento: ${data.codigo}`, left, 48, {
+        align: 'right',
+        width: contentWidth,
+      });
       doc.fillColor(muted).text(`Fecha: ${data.fecha}`, left, 64, {
         align: 'right',
         width: contentWidth,
       });
 
-      doc.moveTo(left, 96).lineTo(right, 96).lineWidth(2).strokeColor(accent).stroke();
+      doc
+        .moveTo(left, 96)
+        .lineTo(right, 96)
+        .lineWidth(2)
+        .strokeColor(accent)
+        .stroke();
 
       let y = 114;
       doc.fillColor(ink).font('Helvetica').fontSize(11);
-      y = this.metaLine(doc, 'Cotización', data.nombreCotizacion, left, y, contentWidth);
-      y = this.metaLine(doc, 'Proyecto', data.proyectoNombre, left, y, contentWidth);
-      y = this.metaLine(doc, 'Cliente', data.clienteNombre, left, y, contentWidth);
+      y = this.metaLine(
+        doc,
+        'Cotización',
+        data.nombreCotizacion,
+        left,
+        y,
+        contentWidth,
+      );
+      y = this.metaLine(
+        doc,
+        'Proyecto',
+        data.proyectoNombre,
+        left,
+        y,
+        contentWidth,
+      );
+      y = this.metaLine(
+        doc,
+        'Cliente',
+        data.clienteNombre,
+        left,
+        y,
+        contentWidth,
+      );
 
       y += 16;
       this.drawTableHeader(doc, col, y, accent);
@@ -67,7 +107,10 @@ export class PdfService {
         doc.font('Helvetica').fontSize(9);
         const nameHeight = Math.max(
           16,
-          doc.heightOfString(item.name, { width: col.desc.w - 8, align: 'left' }),
+          doc.heightOfString(item.name, {
+            width: col.desc.w - 8,
+            align: 'left',
+          }),
         );
         const rowHeight = nameHeight + 10;
 
@@ -78,10 +121,17 @@ export class PdfService {
           y += 24;
         }
 
-        doc.rect(left, y, contentWidth, rowHeight).strokeColor('#e2e8f0').lineWidth(0.5).stroke();
+        doc
+          .rect(left, y, contentWidth, rowHeight)
+          .strokeColor('#e2e8f0')
+          .lineWidth(0.5)
+          .stroke();
         doc.font('Helvetica').fontSize(9).fillColor(ink);
         doc.text(item.name, col.desc.x + 4, y + 5, { width: col.desc.w - 8 });
-        doc.text(String(item.quantity), col.qty.x, y + 5, { width: col.qty.w - 4, align: 'right' });
+        doc.text(String(item.quantity), col.qty.x, y + 5, {
+          width: col.qty.w - 4,
+          align: 'right',
+        });
         doc.text(this.formatClp(item.unitPrice), col.unit.x, y + 5, {
           width: col.unit.w - 4,
           align: 'right',
@@ -102,7 +152,12 @@ export class PdfService {
 
       const totalBoxWidth = 220;
       const totalBoxX = right - totalBoxWidth;
-      doc.moveTo(totalBoxX, y).lineTo(right, y).lineWidth(1.5).strokeColor(accent).stroke();
+      doc
+        .moveTo(totalBoxX, y)
+        .lineTo(right, y)
+        .lineWidth(1.5)
+        .strokeColor(accent)
+        .stroke();
       doc.font('Helvetica-Bold').fontSize(12).fillColor(accent);
       doc.text('Total', totalBoxX, y + 10, { width: 80 });
       doc.text(this.formatClp(data.total), totalBoxX + 80, y + 10, {
@@ -154,11 +209,27 @@ export class PdfService {
     const width = col.total.x + col.total.w - left;
     doc.rect(left, y, width, 22).fillColor('#f1f5f9').fill();
     doc.font('Helvetica-Bold').fontSize(8).fillColor('#334155');
-    doc.text('DESCRIPCIÓN / MATERIAL', col.desc.x + 4, y + 7, { width: col.desc.w - 8 });
-    doc.text('CANT.', col.qty.x, y + 7, { width: col.qty.w - 4, align: 'right' });
-    doc.text('P. UNITARIO', col.unit.x, y + 7, { width: col.unit.w - 4, align: 'right' });
-    doc.text('TOTAL', col.total.x, y + 7, { width: col.total.w - 4, align: 'right' });
-    doc.moveTo(left, y + 22).lineTo(left + width, y + 22).lineWidth(1).strokeColor(accent).stroke();
+    doc.text('DESCRIPCIÓN / MATERIAL', col.desc.x + 4, y + 7, {
+      width: col.desc.w - 8,
+    });
+    doc.text('CANT.', col.qty.x, y + 7, {
+      width: col.qty.w - 4,
+      align: 'right',
+    });
+    doc.text('P. UNITARIO', col.unit.x, y + 7, {
+      width: col.unit.w - 4,
+      align: 'right',
+    });
+    doc.text('TOTAL', col.total.x, y + 7, {
+      width: col.total.w - 4,
+      align: 'right',
+    });
+    doc
+      .moveTo(left, y + 22)
+      .lineTo(left + width, y + 22)
+      .lineWidth(1)
+      .strokeColor(accent)
+      .stroke();
   }
 
   private formatClp(value: number): string {

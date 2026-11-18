@@ -27,7 +27,10 @@ export class MailService {
 
   async enviarCorreo(dto: SendMailDto): Promise<Result<boolean>> {
     try {
-      const html = this.templateService.render(dto.plantilla, dto.contexto || {});
+      const html = this.templateService.render(
+        dto.plantilla,
+        dto.contexto || {},
+      );
       const mailUser = this.configService.get<string>('MAIL_USER');
       const defaultFrom =
         this.configService.get<string>('MAIL_FROM') ||
@@ -38,7 +41,7 @@ export class MailService {
         from,
         to: dto.to,
         subject: dto.subject || 'Notificación Obrix',
-        html
+        html,
       });
 
       return Result.ok(true, 'Correo enviado exitosamente');

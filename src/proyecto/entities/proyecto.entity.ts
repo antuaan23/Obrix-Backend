@@ -1,20 +1,20 @@
-import { 
-  Entity, 
-  PrimaryGeneratedColumn, 
-  Column, 
-  ManyToOne, 
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
   ManyToMany,
   JoinTable,
-  JoinColumn, 
-  CreateDateColumn, 
-  UpdateDateColumn, 
-  Generated, 
-  OneToMany 
-} from "typeorm";
-import { Cliente } from "../../cliente/entities/cliente.entity";
-import { Gasto } from "src/gasto/entities/gasto.entity";
-import { Usuario } from "src/usuario/entities/usuario.entity";
-import { Cotizacion } from "src/cotizacion/entities/cotizacion.entity";
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Generated,
+  OneToMany,
+} from 'typeorm';
+import { Cliente } from '../../cliente/entities/cliente.entity';
+import { Gasto } from 'src/gasto/entities/gasto.entity';
+import { Usuario } from 'src/usuario/entities/usuario.entity';
+import { Cotizacion } from 'src/cotizacion/entities/cotizacion.entity';
 
 @Entity('proyectos')
 export class Proyecto {
@@ -37,7 +37,7 @@ export class Proyecto {
   // cascade: true permite insertar/guardar el cliente en la BD al guardar el proyecto
   @ManyToOne(() => Cliente, (cliente) => cliente.proyectos, {
     onDelete: 'CASCADE',
-    cascade: true, 
+    cascade: true,
     nullable: true,
   })
   @JoinColumn({ name: 'cliente_id' })
@@ -50,7 +50,7 @@ export class Proyecto {
   @JoinTable({
     name: 'proyectos_usuarios',
     joinColumn: { name: 'proyecto_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'usuario_id', referencedColumnName: 'id' }
+    inverseJoinColumn: { name: 'usuario_id', referencedColumnName: 'id' },
   })
   usuarios!: Usuario[];
 
@@ -66,9 +66,9 @@ export class Proyecto {
   @Column({ type: 'boolean', default: true })
   activo: boolean = true;
 
-  @CreateDateColumn({ type: 'timestamp' , name: 'creado_el' })
+  @CreateDateColumn({ type: 'timestamp', name: 'creado_el' })
   creadoEl!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' , name: 'actualizado_el' })
+  @UpdateDateColumn({ type: 'timestamp', name: 'actualizado_el' })
   actualizadoEl!: Date;
 }

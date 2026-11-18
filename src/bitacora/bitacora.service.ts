@@ -9,7 +9,6 @@ import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 import { Usuario } from 'src/usuario/entities/usuario.entity';
 import { obtenerColorPorIndice } from 'src/common/constants/colores.constants';
 
-
 @Injectable()
 export class BitacoraService {
   constructor(

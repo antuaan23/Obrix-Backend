@@ -22,7 +22,8 @@ import { SuscripcionModule } from 'src/suscripcion/suscripcion.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'secreto_super_seguro',
+        secret:
+          configService.get<string>('JWT_SECRET') || 'secreto_super_seguro',
         signOptions: { expiresIn: '8h' },
       }),
     }),

@@ -6,7 +6,12 @@ import {
   NotFoundException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { MaterialService } from './material.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -20,9 +25,9 @@ export class MaterialController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Obtener catálogo completo de materiales' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Lista de materiales obtenida correctamente.' 
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de materiales obtenida correctamente.',
   })
   @ApiResponse({
     status: 404,

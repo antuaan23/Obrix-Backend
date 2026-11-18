@@ -23,7 +23,10 @@ export class PlanUsuarioDto {
 }
 
 export class UsuarioDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'UUID único del usuario' })
+  @ApiProperty({
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'UUID único del usuario',
+  })
   uuid!: string;
 
   @ApiProperty({ example: '12345678-9', description: 'RUT del usuario' })
@@ -32,37 +35,64 @@ export class UsuarioDto {
   @ApiProperty({ example: 'Vicente', description: 'Nombre del usuario' })
   nombre!: string;
 
-  @ApiProperty({ example: 'González', description: 'Apellido paterno del usuario' })
+  @ApiProperty({
+    example: 'González',
+    description: 'Apellido paterno del usuario',
+  })
   ap_paterno!: string;
 
-  @ApiPropertyOptional({ example: 'Moya', description: 'Apellido materno del usuario' })
+  @ApiPropertyOptional({
+    example: 'Moya',
+    description: 'Apellido materno del usuario',
+  })
   ap_materno?: string;
 
-  @ApiProperty({ example: 'virexgonzalez.moya@gmail.com', description: 'Correo electrónico' })
+  @ApiProperty({
+    example: 'virexgonzalez.moya@gmail.com',
+    description: 'Correo electrónico',
+  })
   email!: string;
 
-  @ApiPropertyOptional({ example: '+56912345678', description: 'Teléfono de contacto' })
+  @ApiPropertyOptional({
+    example: '+56912345678',
+    description: 'Teléfono de contacto',
+  })
   telefono?: string;
 
   @ApiPropertyOptional({ example: 2, description: 'ID del rol del usuario' })
   rolId?: number;
 
-  @ApiPropertyOptional({ example: 'Lider', description: 'Nombre del rol del usuario' })
+  @ApiPropertyOptional({
+    example: 'Lider',
+    description: 'Nombre del rol del usuario',
+  })
   rolNombre?: string;
 
   @ApiPropertyOptional({ type: RolUsuarioDto, description: 'Detalle del rol' })
   rol?: RolUsuarioDto;
 
-  @ApiPropertyOptional({ type: PlanUsuarioDto, description: 'Detalle del plan activo' })
+  @ApiPropertyOptional({
+    type: PlanUsuarioDto,
+    description: 'Detalle del plan activo',
+  })
   plan?: PlanUsuarioDto;
 
-  @ApiProperty({ example: true, description: 'Estado de la cuenta del usuario' })
+  @ApiProperty({
+    example: true,
+    description: 'Estado de la cuenta del usuario',
+  })
   activo!: boolean;
 
-  @ApiProperty({ example: '2026-09-15T00:00:00.000Z', description: 'Fecha de registro' })
+  @ApiProperty({
+    example: '2026-09-15T00:00:00.000Z',
+    description: 'Fecha de registro',
+  })
   creado_el!: Date;
 
-  @ApiProperty({ example: '2026-09-15T00:00:00.000Z', description: 'Fecha de última actualización' })
+  @ApiProperty({
+    example: '2026-09-15T00:00:00.000Z',
+    description: 'Fecha de última actualización',
+  })
   actualizado_el!: Date;
 }
 

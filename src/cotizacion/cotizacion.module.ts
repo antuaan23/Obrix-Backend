@@ -12,10 +12,15 @@ import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Cotizacion, Proyecto, Material, DetalleCotizacion]),
+    TypeOrmModule.forFeature([
+      Cotizacion,
+      Proyecto,
+      Material,
+      DetalleCotizacion,
+    ]),
     PdfModule,
     ProyectoModule,
-    MailModule
+    MailModule,
   ],
   controllers: [CotizacionController],
   providers: [CotizacionService],

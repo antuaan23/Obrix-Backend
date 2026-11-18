@@ -1,14 +1,14 @@
-import { 
-  Entity, 
-  PrimaryGeneratedColumn, 
-  Column, 
-  CreateDateColumn, 
-  ManyToOne, 
-  JoinColumn, 
-  Generated
-} from "typeorm";
-import { Proyecto } from "../../proyecto/entities/proyecto.entity";
-import { Usuario } from "../../usuario/entities/usuario.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Generated,
+} from 'typeorm';
+import { Proyecto } from '../../proyecto/entities/proyecto.entity';
+import { Usuario } from '../../usuario/entities/usuario.entity';
 
 @Entity('gastos')
 export class Gasto {
@@ -33,8 +33,8 @@ export class Gasto {
   imagenUrl?: string;
 
   // Relación con Proyecto
-  @ManyToOne(() => Proyecto, (proyecto) => proyecto.gastos, { 
-    onDelete: 'CASCADE' 
+  @ManyToOne(() => Proyecto, (proyecto) => proyecto.gastos, {
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'proyecto_id' })
   proyecto!: Proyecto;
